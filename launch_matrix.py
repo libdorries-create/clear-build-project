@@ -34,6 +34,9 @@ class HardenedValidatorApp:
         self.percentages, self.econ_percentages = {}, {}
         self.current_statement, self.current_econ_statement = "", ""
         self.data_x, self.data_y, self.math_report_txt = None, None, ""
+        
+        # --- NLP MATRIX SENTIMENT STATE ARRAYS ---
+        self.phil_sentiment, self.econ_sentiment = {"Positivity": 0.0, "Negativity": 0.0, "Objectivity": 100.0}, {"Positivity": 0.0, "Negativity": 0.0, "Objectivity": 100.0}""
 
         self.execute_secure_backup()
         self.initialize_hardened_ledger()
@@ -73,6 +76,45 @@ class HardenedValidatorApp:
             shutil.copy("launch_matrix.py", f"{b_dir}/safe_snap_{ts}.py")
         except: pass
 
+    def compute_native_nlp_sentiment(self, text_string):
+        # 1. Standardise incoming corpus tokens
+        words = re.findall(r'\b\w+\b', text_string.lower())
+        
+        # 2. Hardcoded context lexical parameter weights
+        positive_lexicon = {'elegant', 'real', 'growth', 'productivity', 'stability', 'reason', 'logic', 'pure', 'calm', 'authentic', 'freedom', 'spirit', 'absolute', 'manufacturing', 'free'}
+        negative_lexicon = {'futile', 'meaningless', 'illusion', 'void', 'angst', 'absurd', 'malinvestment', 'artificial', 'deficit', 'inflationary', 'hardship', 'nothing', 'rejection', 'fails'}
+        negation_tokens = {'not', 'never', 'no', 'cannot', 'reject', 'rejection', 'fails', 'failing'}
+        
+        pos_score, neg_score = 0, 0
+        negate_next = False
+        
+        # 3. Contextual sequence matching matrix loop
+        for word in words:
+            if word in negation_tokens:
+                negate_next = True
+                continue
+                
+            if word in positive_lexicon:
+                if negate_next: neg_score += 1
+                else: pos_score += 1
+                negate_next = False
+            elif word in negative_lexicon:
+                if negate_next: pos_score += 1
+                else: neg_score += 1
+                negate_next = False
+                
+        # 4. Convert parameters to pure matrix percentage weights
+        total_tokens = pos_score + neg_score
+        if total_tokens == 0:
+            return {"Positivity": 0.0, "Negativity": 0.0, "Objectivity": 100.0}
+            
+        pos_p = round((pos_score / total_tokens) * 100, 1)
+        neg_p = round((neg_score / total_tokens) * 100, 1)
+        obj_p = round(max(0.0, 100.0 - (pos_p + neg_p)), 1)
+        
+        return {"Positivity": pos_p, "Negativity": neg_p, "Objectivity": obj_p}
+
+
     def initialize_hardened_ledger(self):
         try:
             self.conn = sqlite3.connect("project_archive.db", check_same_thread=False)
@@ -111,6 +153,10 @@ class HardenedValidatorApp:
         tk.Button(self.p_frame, text="2. TEST PROPOSITION", command=self.validate_philosophy, bg="#00bcff", fg="#1a1a1a", font=("Helvetica", 11, "bold"), bd=0, padx=15, pady=8).pack(side="left", padx=5)
         self.pdf_btn = tk.Button(self.p_frame, text="3. EXPORT PHILOSOPHY PDF", command=self.export_philosophy_pdf, bg="#eab308", fg="#1a1a1a", font=("Helvetica", 11, "bold"), bd=0, padx=15, pady=8, state="disabled")
         self.pdf_btn.pack(side="left", padx=5)
+        
+        # --- LIVE NLP SENTIMENT MATRIX READOUT ---
+        self.phil_nlp_lbl = tk.Label(self.tab2, text="NLP Context Sentiment Vector: [Awaiting Metric Scans...]", bg="#1a1a1a", fg="#eab308", font=("Helvetica", 9, "italic"))
+        self.phil_nlp_lbl.pack(pady=10)
 
     def setup_economic_tab(self):
         tk.Label(self.tab3, text="HISTORICAL MACROECONOMIC CYCLE VALIDATOR", bg="#1a1a1a", fg="#ffaa00", font=("Helvetica", 11, "bold")).pack(pady=15)
@@ -122,6 +168,10 @@ class HardenedValidatorApp:
         tk.Button(self.e_frame, text="2. RUN MACRO ANALYSIS", command=self.validate_economics, bg="#ffaa00", fg="#1a1a1a", font=("Helvetica", 11, "bold"), bd=0, padx=15, pady=8).pack(side="left", padx=5)
         self.econ_pdf_btn = tk.Button(self.e_frame, text="3. EXPORT ECONOMIC PDF", command=self.export_economic_pdf, bg="#eab308", fg="#1a1a1a", font=("Helvetica", 11, "bold"), bd=0, padx=15, pady=8, state="disabled")
         self.econ_pdf_btn.pack(side="left", padx=5)
+        
+        # --- LIVE NLP MACRO-SENTIMENT READOUT ---
+        self.econ_nlp_lbl = tk.Label(self.tab3, text="NLP Context Sentiment Vector: [Awaiting Metric Scans...]", bg="#1a1a1a", fg="#eab308", font=("Helvetica", 9, "italic"))
+        self.econ_nlp_lbl.pack(pady=10)
 
     def setup_theme_tab(self):
         tk.Label(self.tab4, text="CHART THEME AND PALETTE SYSTEM CONFIGURATOR", bg="#1a1a1a", fg="#a855f7", font=("Helvetica", 11, "bold")).pack(pady=15)
@@ -259,8 +309,13 @@ class HardenedValidatorApp:
         try:
             self.cursor.execute("INSERT INTO philosophy_scans (timestamp, text_blob, weights) VALUES (?, ?, ?)", (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), txt, str(self.percentages)))
             self.conn.commit()
+            
+            # Fire the active NLP calculator and stream values to the dashboard label
+            self.phil_sentiment = self.compute_native_nlp_sentiment(txt)
+            self.phil_nlp_lbl.configure(text=f"NLP Context Sentiment Vector: {self.phil_sentiment}", fg="#00ff66")
+            
             self.pdf_btn.configure(state="normal")
-            messagebox.showinfo("Conceptual Analysis Matrix Verified", f"Theory Breakdown Metrics:\n{self.percentages}")
+            messagebox.showinfo("Conceptual Analysis Matrix Verified", f"Theory Breakdown Metrics:\n{self.percentages}\n\nSentiment Match Indices:\n{self.phil_sentiment}")
         except Exception as e: messagebox.showerror("Database Write Failure", str(e))
 
     def validate_economics(self):
@@ -274,8 +329,13 @@ class HardenedValidatorApp:
         try:
             self.cursor.execute("INSERT INTO economic_scans (timestamp, text_blob, weights) VALUES (?, ?, ?)", (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), txt, str(self.econ_percentages)))
             self.conn.commit()
+            
+            # Fire the active NLP calculator and update the dashboard macro-label
+            self.econ_sentiment = self.compute_native_nlp_sentiment(txt)
+            self.econ_nlp_lbl.configure(text=f"NLP Context Sentiment Vector: {self.econ_sentiment}", fg="#00ff66")
+            
             self.econ_pdf_btn.configure(state="normal")
-            messagebox.showinfo("Macro-Economic Mapping Active", f"Model Fit Indices:\n{self.econ_percentages}")
+            messagebox.showinfo("Macro-Economic Mapping Active", f"Model Fit Indices:\n{self.econ_percentages}\n\nSentiment Match Indices:\n{self.econ_sentiment}")
         except Exception as e: messagebox.showerror("Database Write Failure", str(e))
 
     def export_math_pdf(self):
@@ -311,6 +371,8 @@ class HardenedValidatorApp:
                 Paragraph("Quantum Philosophical Proposition Ledger", title_style),
                 Spacer(1, 15),
                 Paragraph(f"<b>Analyzed Structural Matrix Sequence:</b><br/>{self.current_statement}", body_style),
+                Spacer(1, 15),
+                Paragraph(f"<b>NLP Context Sentiment Analysis:</b> {str(self.phil_sentiment)}", body_style),
                 Spacer(1, 25)
             ]
             
@@ -380,6 +442,8 @@ class HardenedValidatorApp:
                 Paragraph("Macroeconomic Cycle Fit Assessment", title_style_econ),
                 Spacer(1, 15),
                 Paragraph(f"<b>Source Parameters Scanned:</b><br/>{self.current_econ_statement}", body_style_econ),
+                Spacer(1, 15),
+                Paragraph(f"<b>NLP Context Sentiment Analysis:</b> {str(self.econ_sentiment)}", body_style_econ),
                 Spacer(1, 25)
             ]
             
