@@ -305,9 +305,7 @@ class HardenedValidatorApp:
                 Paragraph("Quantum Philosophical Proposition Ledger", getSampleStyleSheet()['Title']),
                 Spacer(1, 15),
                 Paragraph(f"<b>Analyzed Structural Matrix Sequence:</b><br/>{self.current_statement}", getSampleStyleSheet()['BodyText']),
-                Spacer(1, 20),
-                ReportLabImage("temp_phil_chart.png", width=400, height=200),
-                Spacer(1, 15)
+                Spacer(1, 25)
             ]
             doc.build(story)
             if os.path.exists("temp_phil_chart.png"): os.remove("temp_phil_chart.png")
