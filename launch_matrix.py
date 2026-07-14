@@ -435,16 +435,67 @@ if __name__ == "__main__":
     def export_philosophy_pdf(self):
         fp = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF Files", "*.pdf")])
         if not fp: return
-        doc = SimpleDocTemplate(fp, pagesize=letter)
-        story = [Paragraph("Quantum Philosophical Proposition Ledger", getSampleStyleSheet()['Title']), Spacer(1, 12), Paragraph(f"Metrics: {str(self.percentages)}", getSampleStyleSheet()['BodyText'])]
-        doc.build(story); messagebox.showinfo("Export Successful", "PDF generated.")
+        try:
+            from reportlab.platypus import Image as RLImage
+            # 1. Generate local plot image metrics
+            plt.figure(figsize=(6, 3))
+            plt.style.use('dark_background')
+            schools = list(self.percentages.keys())
+            weights = list(self.percentages.values())
+            plt.barh(schools, weights, color='#00bcff', edgecolor='white')
+            plt.title("Discipline Composition Spectrum Analysis")
+            plt.xlabel("Percentage Weight (%)")
+            plt.tight_layout()
+            plt.savefig("temp_phil_chart.png", dpi=150)
+            plt.close()
+
+            # 2. Compile report lab file structure layout
+            doc = SimpleDocTemplate(fp, pagesize=letter)
+            story = [
+                Paragraph("Quantum Philosophical Proposition Ledger", getSampleStyleSheet()['Title']),
+                Spacer(1, 15),
+                Paragraph(f"<b>Analyzed Structural Matrix Sequence:</b><br/>{self.current_statement}", getSampleStyleSheet()['BodyText']),
+                Spacer(1, 20),
+                RLImage("temp_phil_chart.png", width=400, height=200),
+                Spacer(1, 15)
+            ]
+            doc.build(story)
+            if os.path.exists("temp_phil_chart.png"): os.remove("temp_phil_chart.png")
+            messagebox.showinfo("Export Successful", "Visual Philosophical ledger successfully printed to PDF.")
+        except Exception as e:
+            messagebox.showerror("PDF Render Failure", str(e))
 
     def export_economic_pdf(self):
         fp = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF Files", "*.pdf")])
         if not fp: return
-        doc = SimpleDocTemplate(fp, pagesize=letter)
-        story = [Paragraph("Macroeconomic Cycle Fit Assessment", getSampleStyleSheet()['Title']), Spacer(1, 12), Paragraph(f"Weights: {str(self.econ_percentages)}", getSampleStyleSheet()['BodyText'])]
-        doc.build(story); messagebox.showinfo("Export Successful", "PDF generated.")
+        try:
+            from reportlab.platypus import Image as RLImage
+            # 1. Generate localized economic model pie distribution
+            plt.figure(figsize=(5, 4))
+            plt.style.use('dark_background')
+            labels = list(self.econ_percentages.keys())
+            slices = list(self.econ_percentages.values())
+            colors_list = ['#ffaa00', '#00ff66', '#f43f5e']
+            plt.pie(slices, labels=labels, autopct='%1.1f%%', colors=colors_list, startangle=140)
+            plt.title("Macroeconomic Cycle Structural Model Fit Breakdown")
+            plt.tight_layout()
+            plt.savefig("temp_econ_chart.png", dpi=150)
+            plt.close()
+
+            # 2. Build out formal page document structure
+            doc = SimpleDocTemplate(fp, pagesize=letter)
+            story = [
+                Paragraph("Macroeconomic Cycle Fit Assessment", getSampleStyleSheet()['Title']),
+                Spacer(1, 15),
+                Paragraph(f"<b>Source Parameters Scanned:</b><br/>{self.current_econ_statement}", getSampleStyleSheet()['BodyText']),
+                Spacer(1, 25),
+                RLImage("temp_econ_chart.png", width=350, height=280)
+            ]
+            doc.build(story)
+            if os.path.exists("temp_econ_chart.png"): os.remove("temp_econ_chart.png")
+            messagebox.showinfo("Export Successful", "Visual Macroeconomic analysis report printed to PDF.")
+        except Exception as e:
+            messagebox.showerror("PDF Render Failure", str(e))
 
 if __name__ == "__main__":
     root = tk.Tk()
