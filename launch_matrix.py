@@ -15,8 +15,7 @@ from datetime import datetime
 
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-from reportlab.lib.styles import ParagraphStyle
-from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import Image as ReportLabImage
 
 def linear_theory(x, m, c): return m * x + c
@@ -61,6 +60,10 @@ class HardenedValidatorApp:
         self.tab5 = tk.Frame(self.notebook, bg="#1a1a1a")
         self.notebook.add(self.tab5, text="Historical Database Analytics")
         self.setup_history_tab()
+
+        self.current_bg, self.current_fg, self.current_accent = "#1a1a1a", "#00ff66", "#00ff66"
+        self.pdf_bg, self.pdf_text, self.pdf_title = '#1a1a1a', '#00ff66', '#00ff66'
+        self.chart_colors = ['#00ff66', '#00bcff', '#a855f7']
 
     def execute_secure_backup(self):
         try:
@@ -132,8 +135,6 @@ class HardenedValidatorApp:
 
     def apply_theme_profile(self):
         profile = self.theme_choice.get()
-        
-        # Globally bind exact color profiles so all background calculation tabs share states instantly
         if profile == "Matrix Dark (Default)":
             self.current_bg, self.current_fg, self.current_accent = "#1a1a1a", "#00ff66", "#00ff66"
             self.pdf_bg, self.pdf_text, self.pdf_title = '#1a1a1a', '#00ff66', '#00ff66'
@@ -142,14 +143,12 @@ class HardenedValidatorApp:
             self.current_bg, self.current_fg, self.current_accent = "#0f172a", "#f43f5e", "#38bdf8"
             self.pdf_bg, self.pdf_text, self.pdf_title = '#0f172a', '#ffffff', '#38bdf8'
             self.chart_colors = ['#f43f5e', '#38bdf8', '#eab308']
-        else: # Classic Slate
+        else:
             self.current_bg, self.current_fg, self.current_accent = "#334155", "#cbd5e1", "#cbd5e1"
             self.pdf_bg, self.pdf_text, self.pdf_title = '#cbd5e1', '#1e293b', '#0f172a'
             self.chart_colors = ['#475569', '#94a3b8', '#cbd5e1']
-            
         for w in [self.root, self.tab1, self.tab2, self.tab3, self.tab4, self.tab5]: 
             w.configure(bg=self.current_bg)
-            
         self.theme_status.configure(text=f"Applied Layout Palette Scheme: {profile}", fg=self.current_accent)
         messagebox.showinfo("Matrix Styles Modified", f"Interface re-mapped cleanly to: {profile}")
 
@@ -286,18 +285,16 @@ class HardenedValidatorApp:
         story = [Paragraph("Empirical Math Data Validation Audit Report", getSampleStyleSheet()['Title']), Spacer(1, 12), Paragraph(self.math_report_txt.replace('\n', '<br/>'), getSampleStyleSheet()['BodyText'])]
         doc.build(story); messagebox.showinfo("Export Successful", "PDF generated.")
 
-        def export_philosophy_pdf(self):
+    def export_philosophy_pdf(self):
         fp = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF Files", "*.pdf")])
         if not fp: return
         try:
             from reportlab.graphics.shapes import Drawing
             from reportlab.graphics.charts.barcharts import HorizontalBarChart
             from reportlab.lib import colors
-            from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
             
+            # Absolute contrast scaling translations
             theme = self.theme_choice.get()
-            
-            # Math contrast scaling translations
             if theme == "Matrix Dark (Default)":
                 bg_hex, text_hex, title_hex, bar_hex = '#1a1a1a', '#00ff66', '#00ff66', '#00ff66'
             elif theme == "Cyberpunk Neon":
@@ -348,7 +345,7 @@ class HardenedValidatorApp:
             messagebox.showinfo("Export Successful", "Crisp vector-drawn Philosophical ledger successfully printed to PDF.")
         except Exception as e: messagebox.showerror("Vector Render Failure", str(e))
 
-        def export_economic_pdf(self):
+    def export_economic_pdf(self):
         fp = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF Files", "*.pdf")])
         if not fp: return
         try:
@@ -356,7 +353,6 @@ class HardenedValidatorApp:
             from reportlab.graphics.charts.piecharts import Pie
             from reportlab.graphics.charts.legends import Legend
             from reportlab.lib import colors
-            from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
             
             theme = self.theme_choice.get()
             if theme == "Matrix Dark (Default)":
