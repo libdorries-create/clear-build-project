@@ -56,8 +56,7 @@ class HardenedValidatorApp:
         self.tab4 = tk.Frame(self.notebook, bg="#1a1a1a")
         self.notebook.add(self.tab4, text="UI Matrix Theme Manager")
         self.setup_theme_tab()
-        
-        # --- HISTORICAL ANALYTICS LEDGER DASHBOARD TAB ---
+
         self.tab5 = tk.Frame(self.notebook, bg="#1a1a1a")
         self.notebook.add(self.tab5, text="Historical Database Analytics")
         self.setup_history_tab()
@@ -136,6 +135,37 @@ class HardenedValidatorApp:
         for w in [self.root, self.tab1, self.tab2, self.tab3, self.tab4, self.tab5]: w.configure(bg=bg)
         self.theme_status.configure(text=f"Applied Layout Palette Scheme: {profile}", fg=accent)
         messagebox.showinfo("Matrix Styles Modified", f"Interface re-mapped cleanly to: {profile}")
+
+    def setup_history_tab(self):
+        tk.Label(self.tab5, text="SQLITE DATABASE ARCHIVE TRANSACTION LOGS", bg="#1a1a1a", fg="#00bcff", font=("Helvetica", 11, "bold")).pack(pady=15)
+        self.history_txt = tk.Text(self.tab5, height=12, width=65, bg="#2d2d2d", fg="white", font=("Courier", 9), bd=0)
+        self.history_txt.pack(padx=20, pady=5)
+        tk.Button(self.tab5, text="🔄 REFRESH LEDGER STATISTICS", command=self.refresh_history_ledger, bg="#00bcff", fg="#1a1a1a", font=("Helvetica", 10, "bold"), bd=0, padx=12, pady=6).pack(pady=15)
+        self.refresh_history_ledger()
+
+    def refresh_history_ledger(self):
+        self.history_txt.configure(state="normal")
+        self.history_txt.delete("1.0", tk.END)
+        self.history_txt.insert(tk.END, f"=== SYSTEM ARCHIVE SYNC STATUS: SECURE ({datetime.now().strftime('%H:%M:%S')}) ===\n\n")
+        try:
+            self.cursor.execute("SELECT timestamp, summary FROM math_scans ORDER BY id DESC LIMIT 5")
+            math_rows = self.cursor.fetchall()
+            self.history_txt.insert(tk.END, ">> LATEST PARAMETRIC MATH VALIDATIONS:\n")
+            if not math_rows: self.history_txt.insert(tk.END, " [No transaction entries archived yet.]\n")
+            for r in math_rows: self.history_txt.insert(tk.END, f" * [{r[0]}] {r[1].splitlines()}\n")
+            self.cursor.execute("SELECT timestamp, weights FROM philosophy_scans ORDER BY id DESC LIMIT 3")
+            phil_rows = self.cursor.fetchall()
+            self.history_txt.insert(tk.END, "\n>> LATEST CONCEPTUAL THEORETICAL COEFFICIENTS:\n")
+            if not phil_rows: self.history_txt.insert(tk.END, " [No transaction entries archived yet.]\n")
+            for r in phil_rows: self.history_txt.insert(tk.END, f" * [{r[0]}] {r[1][:55]}...\n")
+            self.cursor.execute("SELECT timestamp, weights FROM economic_scans ORDER BY id DESC LIMIT 3")
+            econ_rows = self.cursor.fetchall()
+            self.history_txt.insert(tk.END, "\n>> LATEST HISTORICAL CYCLE MODEL FIT WEIGHTS:\n")
+            if not econ_rows: self.history_txt.insert(tk.END, " [No transaction entries archived yet.]\n")
+            for r in econ_rows: self.history_txt.insert(tk.END, f" * [{r[0]}] {r[1]}\n")
+        except Exception as e:
+            self.history_txt.insert(tk.END, f"\n⚠️ Ledger Database Connection Interrupt: {str(e)}")
+        self.history_txt.configure(state="disabled")
 
     def load_data(self):
         fp = filedialog.askopenfilename(filetypes=[("CSV Files", "*.csv")])
@@ -228,34 +258,9 @@ class HardenedValidatorApp:
         try:
             self.cursor.execute("INSERT INTO economic_scans (timestamp, text_blob, weights) VALUES (?, ?, ?)", (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), txt, str(self.econ_percentages)))
             self.conn.commit()
-            
-            theme = self.theme_choice.get()
-            bg_color = '#1a1a1a' if theme == "Matrix Dark (Default)" else ('#0f172a' if theme == "Cyberpunk Neon" else '#f8fafc')
-            text_color = 'white' if theme in ["Matrix Dark (Default)", "Cyberpunk Neon"] else 'black'
-            colors_list = ['#00ff66', '#00bcff', '#a855f7'] if theme == "Matrix Dark (Default)" else (['#f43f5e', '#38bdf8', '#eab308'] if theme == "Cyberpunk Neon" else ['#475569', '#94a3b8', '#cbd5e1'])
-            
-            fig, ax = plt.subplots(figsize=(5, 4))
-            fig.patch.set_facecolor(bg_color)
-            ax.set_facecolor(bg_color)
-            
-            wedges, texts, autotexts = ax.pie(
-                list(self.econ_percentages.values()), 
-                labels=list(self.econ_percentages.keys()), 
-                autopct='%1.1f%%', 
-                colors=colors_list, 
-                startangle=140,
-                textprops=dict(color=text_color, fontsize=9)
-            )
-            for autotext in autotexts: autotext.set_color('black' if theme == "Classic Slate" else 'white')
-            
-            ax.set_title("Macroeconomic Cycle Fit Breakdown", color=text_color, fontsize=11, fontweight='bold', pad=10)
-            plt.tight_layout()
-            plt.savefig("temp_econ_chart.png", dpi=150, facecolor=fig.get_facecolor(), edgecolor='none')
-            plt.close()
-            
             self.econ_pdf_btn.configure(state="normal")
             messagebox.showinfo("Macro-Economic Mapping Active", f"Model Fit Indices:\n{self.econ_percentages}")
-        except Exception as e: print("Econ chart error:", e)
+        except Exception as e: messagebox.showerror("Database Write Failure", str(e))
 
     def export_math_pdf(self):
         fp = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF Files", "*.pdf")])
@@ -286,10 +291,8 @@ class HardenedValidatorApp:
             chart.y = 20
             chart.height = 160
             chart.width = 320
-            
             chart.data = [list(self.percentages.values())]
             chart.categoryAxis.categoryNames = list(self.percentages.keys())
-            
             chart.categoryAxis.labels.fontSize = 9
             chart.categoryAxis.labels.fontName = 'Helvetica'
             chart.valueAxis.valueMin = 0
@@ -307,48 +310,54 @@ class HardenedValidatorApp:
             messagebox.showinfo("Export Successful", "Crisp vector-drawn Philosophical ledger successfully printed to PDF.")
         except Exception as e: messagebox.showerror("Vector Render Failure", str(e))
 
-    def setup_history_tab(self):
-        tk.Label(self.tab5, text="SQLITE DATABASE ARCHIVE TRANSACTION LOGS", bg="#1a1a1a", fg="#00bcff", font=("Helvetica", 11, "bold")).pack(pady=15)
-        
-        # Build a scrollable display console area
-        self.history_txt = tk.Text(self.tab5, height=12, width=65, bg="#2d2d2d", fg="white", font=("Courier", 9), bd=0)
-        self.history_txt.pack(padx=20, pady=5)
-        
-        tk.Button(self.tab5, text="🔄 REFRESH LEDGER STATISTICS", command=self.refresh_history_ledger, bg="#00bcff", fg="#1a1a1a", font=("Helvetica", 10, "bold"), bd=0, padx=12, pady=6).pack(pady=15)
-        self.refresh_history_ledger()
-
-    def refresh_history_ledger(self):
-        self.history_txt.configure(state="normal")
-        self.history_txt.delete("1.0", tk.END)
-        self.history_txt.insert(tk.END, f"=== SYSTEM ARCHIVE SYNC STATUS: SECURE ({datetime.now().strftime('%H:%M:%S')}) ===\n\n")
-        
+    def export_economic_pdf(self):
+        fp = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF Files", "*.pdf")])
+        if not fp: return
         try:
-            # 1. Fetch historical mathematical summaries
-            self.cursor.execute("SELECT timestamp, summary FROM math_scans ORDER BY id DESC LIMIT 5")
-            math_rows = self.cursor.fetchall()
-            self.history_txt.insert(tk.END, ">> LATEST PARAMETRIC MATH VALIDATIONS:\n")
-            if not math_rows: self.history_txt.insert(tk.END, " [No transaction entries archived yet.]\n")
-            for r in math_rows: self.history_txt.insert(tk.END, f" * [{r[0]}] {r[1].split('\n')[1]}\n")
+            from reportlab.graphics.shapes import Drawing
+            from reportlab.graphics.charts.piecharts import Pie
+            from reportlab.graphics.charts.legends import Legend
+            from reportlab.lib import colors
             
-            # 2. Fetch historical philosophical weights
-            self.cursor.execute("SELECT timestamp, weights FROM philosophy_scans ORDER BY id DESC LIMIT 3")
-            phil_rows = self.cursor.fetchall()
-            self.history_txt.insert(tk.END, "\n>> LATEST CONCEPTUAL THEORETICAL COEFFICIENTS:\n")
-            if not phil_rows: self.history_txt.insert(tk.END, " [No transaction entries archived yet.]\n")
-            for r in phil_rows: self.history_txt.insert(tk.END, f" * [{r[0]}] {r[1][:55]}...\n")
+            doc = SimpleDocTemplate(fp, pagesize=letter)
+            story = [
+                Paragraph("Macroeconomic Cycle Fit Assessment", getSampleStyleSheet()['Title']),
+                Spacer(1, 15),
+                Paragraph(f"<b>Source Parameters Scanned:</b><br/>{self.current_econ_statement}", getSampleStyleSheet()['BodyText']),
+                Spacer(1, 25)
+            ]
             
-            # 3. Fetch historical macroeconomic fitting bounds
-            self.cursor.execute("SELECT timestamp, weights FROM economic_scans ORDER BY id DESC LIMIT 3")
-            econ_rows = self.cursor.fetchall()
-            self.history_txt.insert(tk.END, "\n>> LATEST HISTORICAL CYCLE MODEL FIT WEIGHTS:\n")
-            if not econ_rows: self.history_txt.insert(tk.END, " [No transaction entries archived yet.]\n")
-            for r in econ_rows: self.history_txt.insert(tk.END, f" * [{r[0]}] {r[1]}\n")
+            d = Drawing(400, 200)
+            pc = Pie()
+            pc.x = 20
+            pc.y = 20
+            pc.width = 160
+            pc.height = 160
+            pc.data = list(self.econ_percentages.values())
+            pc.labels = [f"{v}%" for v in self.econ_percentages.values()]
+            pc.slices.strokeWidth = 0.5
             
-        except Exception as e:
-            self.history_txt.insert(tk.END, f"\n⚠️ Ledger Database Connection Interrupt: {str(e)}")
+            theme = self.theme_choice.get()
+            c_list = [colors.HexColor('#00ff66'), colors.HexColor('#00bcff'), colors.HexColor('#a855f7')] if theme == "Matrix Dark (Default)" else ([colors.HexColor('#f43f5e'), colors.HexColor('#38bdf8'), colors.HexColor('#eab308')] if theme == "Cyberpunk Neon" else [colors.HexColor('#475569'), colors.HexColor('#94a3b8'), colors.HexColor('#cbd5e1')])
+            for i, color in enumerate(c_list): pc.slices[i].fillColor = color
+                
+            leg = Legend()
+            leg.x = 220
+            leg.y = 150
+            leg.dx = 8
+            leg.dy = 8
+            leg.fontName = 'Helvetica'
+            leg.fontSize = 9
+            leg.boxAnchor = 'nw'
+            leg.columnMaximum = 3
+            leg.colorNamePairs = [(c_list[i], list(self.econ_percentages.keys())[i]) for i in range(len(c_list))]
             
-        self.history_txt.configure(state="disabled")
-
+            d.add(pc)
+            d.add(leg)
+            story.append(d)
+            doc.build(story)
+            messagebox.showinfo("Export Successful", "Crisp vector-drawn Macroeconomic analysis report printed to PDF.")
+        except Exception as e: messagebox.showerror("Vector Render Failure", str(e))
 
 if __name__ == "__main__":
     root = tk.Tk()
