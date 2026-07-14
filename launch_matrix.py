@@ -318,18 +318,52 @@ class HardenedValidatorApp:
         fp = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF Files", "*.pdf")])
         if not fp: return
         try:
+            from reportlab.graphics.shapes import Drawing
+            from reportlab.graphics.charts.piecharts import Pie
+            from reportlab.graphics.charts.legends import Legend
+            
             doc = SimpleDocTemplate(fp, pagesize=letter)
             story = [
                 Paragraph("Macroeconomic Cycle Fit Assessment", getSampleStyleSheet()['Title']),
                 Spacer(1, 15),
                 Paragraph(f"<b>Source Parameters Scanned:</b><br/>{self.current_econ_statement}", getSampleStyleSheet()['BodyText']),
-                Spacer(1, 25),
-                ReportLabImage("temp_econ_chart.png", width=350, height=280)
+                Spacer(1, 25)
             ]
+            
+            d = Drawing(400, 200)
+            pc = Pie()
+            pc.x = 20
+            pc.y = 20
+            pc.width = 160
+            pc.height = 160
+            pc.data = list(self.econ_percentages.values())
+            pc.labels = [f"{v}%" for v in self.econ_percentages.values()]
+            pc.slices.strokeWidth = 0.5
+            
+            # Map dynamic vector color styles to match chosen theme profiles
+            theme = self.theme_choice.get()
+            c_list = [colors.HexColor('#00ff66'), colors.HexColor('#00bcff'), colors.HexColor('#a855f7')] if theme == "Matrix Dark (Default)" else ([colors.HexColor('#f43f5e'), colors.HexColor('#38bdf8'), colors.HexColor('#eab308')] if theme == "Cyberpunk Neon" else [colors.HexColor('#475569'), colors.HexColor('#94a3b8'), colors.HexColor('#cbd5e1')])
+            for i, color in enumerate(c_list):
+                pc.slices[i].fillColor = color
+                
+            # Build an explicit layout chart key ledger legend
+            leg = Legend()
+            leg.x = 220
+            leg.y = 150
+            leg.dx = 8
+            leg.dy = 8
+            leg.fontName = 'Helvetica'
+            leg.fontSize = 9
+            leg.boxAnchor = 'nw'
+            leg.columnMaximum = 3
+            leg.colorNamePairs = [(c_list[i], list(self.econ_percentages.keys())[i]) for i in range(len(c_list))]
+            
+            d.add(pc)
+            d.add(leg)
+            story.append(d)
             doc.build(story)
-            if os.path.exists("temp_econ_chart.png"): os.remove("temp_econ_chart.png")
-            messagebox.showinfo("Export Successful", "Macroeconomic report chart printed to PDF.")
-        except Exception as e: messagebox.showerror("PDF Render Failure", str(e))
+            messagebox.showinfo("Export Successful", "Crisp vector-drawn Macroeconomic analysis report printed to PDF.")
+        except Exception as e: messagebox.showerror("Vector Render Failure", str(e))
 
     def setup_history_tab(self):
         tk.Label(self.tab5, text="SQLITE DATABASE ARCHIVE TRANSACTION LOGS", bg="#1a1a1a", fg="#00bcff", font=("Helvetica", 11, "bold")).pack(pady=15)
