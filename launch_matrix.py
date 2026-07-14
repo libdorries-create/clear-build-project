@@ -51,6 +51,11 @@ class HardenedValidatorApp:
         self.tab3 = tk.Frame(self.notebook, bg="#1a1a1a")
         self.notebook.add(self.tab3, text="Macro-Economic Cycle Tester")
         self.setup_economic_tab()
+        
+        # --- GRAPHICAL INTERFACE THEME CUSTOMIZER CONFIG ---
+        self.tab4 = tk.Frame(self.notebook, bg="#1a1a1a")
+        self.notebook.add(self.tab4, text="UI Matrix Theme Manager")
+        self.setup_theme_tab()
 
     def execute_secure_backup(self):
         try:
@@ -173,15 +178,21 @@ class HardenedValidatorApp:
     def validate_philosophy(self):
         txt = self.text_box.get("1.0", tk.END)
         self.current_statement = txt
-        rationalism = len(re.findall(r'(reason|logic|contemplation|mind|universe)', txt, re.I))
-        empiricism = len(re.findall(r'(empirical|data|sensory|observations|experiment)', txt, re.I))
-        stoicism = len(re.findall(r'(control|enduring|hardship|calm|stoic|void)', txt, re.I))
+        rationalism = len(re.findall(r'(reason|logic|contemplation|mind|universe|priori|deductive)', txt, re.I))
+        empiricism = len(re.findall(r'(empirical|data|sensory|observations|experiment|posteriori|induction)', txt, re.I))
+        stoicism = len(re.findall(r'(control|enduring|hardship|calm|stoic|void|destiny|providence)', txt, re.I))
+        existentialism = len(re.findall(r'(absurd|angst|meaningless|choice|authentic|freedom|existence)', txt, re.I))
+        nihilism = len(re.findall(r'(nothing|rejection|void|meaning|morality|futile|illusion)', txt, re.I))
+        idealism = len(re.findall(r'(spirit|mind|consciousness|ideas|perception|immaterial|absolute)', txt, re.I))
         
-        tot = max(1, rationalism + empiricism + stoicism)
+        tot = max(1, rationalism + empiricism + stoicism + existentialism + nihilism + idealism)
         self.percentages = {
             "Rationalism": round((rationalism/tot)*100, 2),
             "Empiricism": round((empiricism/tot)*100, 2),
-            "Stoicism": round((stoicism/tot)*100, 2)
+            "Stoicism": round((stoicism/tot)*100, 2),
+            "Existentialism": round((existentialism/tot)*100, 2),
+            "Nihilism": round((nihilism/tot)*100, 2),
+            "Idealism": round((idealism/tot)*100, 2)
         }
         
         try:
@@ -195,13 +206,15 @@ class HardenedValidatorApp:
     def validate_economics(self):
         txt = self.econ_text_box.get("1.0", tk.END)
         self.current_econ_statement = txt
-        austrian = len(re.findall(r'(malinvestment|artificial|printing|stimulus|credit|inflationary)', txt, re.I))
-        classical = len(re.findall(r'(productivity|manufacturing|industrial|trade|commodity)', txt, re.I))
+        austrian = len(re.findall(r'(malinvestment|artificial|printing|stimulus|credit|inflationary|hayek|mises|calculation)', txt, re.I))
+        classical = len(re.findall(r'(productivity|manufacturing|industrial|trade|commodity|smith|ricardo|supply)', txt, re.I))
+        keynesian = len(re.findall(r'(multiplier|aggregate|intervention|spending|deficit|fiscal|liquidity|demand)', txt, re.I))
         
-        tot = max(1, austrian + classical)
+        tot = max(1, austrian + classical + keynesian)
         self.econ_percentages = {
             "Austrian School": round((austrian/tot)*100, 2),
-            "Classical/Production": round((classical/tot)*100, 2)
+            "Classical/Production": round((classical/tot)*100, 2),
+            "Keynesian/Aggregate": round((keynesian/tot)*100, 2)
         }
         
         try:
@@ -254,6 +267,35 @@ class HardenedValidatorApp:
         ]
         doc.build(story)
         messagebox.showinfo("Export Successful", "Macroeconomic analysis engine report outputted to PDF.")
+
+    def setup_theme_tab(self):
+        tk.Label(self.tab4, text="CHART THEME AND PALETTE SYSTEM CONFIGURATOR", bg="#1a1a1a", fg="#a855f7", font=("Helvetica", 11, "bold")).pack(pady=15)
+        
+        tk.Label(self.tab4, text="Select Active Colorway Profile:", bg="#1a1a1a", fg="white", font=("Helvetica", 9)).pack(pady=5)
+        self.theme_choice = ttk.Combobox(self.tab4, values=["Matrix Dark (Default)", "Cyberpunk Neon", "Classic Slate"], state="readonly", width=25)
+        self.theme_choice.set("Matrix Dark (Default)")
+        self.theme_choice.pack(pady=5)
+        
+        tk.Button(self.tab4, text="APPLY INTERFACE CONFIG", command=self.apply_theme_profile, bg="#a855f7", fg="white", font=("Helvetica", 10, "bold"), bd=0, padx=15, pady=8).pack(pady=20)
+        self.theme_status = tk.Label(self.tab4, text="Current Style Profile: Stable", bg="#1a1a1a", fg="#888888", font=("Helvetica", 9, "italic"))
+        self.theme_status.pack()
+
+    def apply_theme_profile(self):
+        profile = self.theme_choice.get()
+        if profile == "Matrix Dark (Default)":
+            bg, fg, accent = "#1a1a1a", "#00ff66", "#00ff66"
+        elif profile == "Cyberpunk Neon":
+            bg, fg, accent = "#0f172a", "#f43f5e", "#38bdf8"
+        else:
+            bg, fg, accent = "#334155", "#cbd5e1", "#f1f5f9"
+            
+        self.root.configure(bg=bg)
+        self.tab1.configure(bg=bg)
+        self.tab2.configure(bg=bg)
+        self.tab3.configure(bg=bg)
+        self.tab4.configure(bg=bg)
+        self.theme_status.configure(text=f"Applied Layout Palette Scheme: {profile}", fg=accent)
+        messagebox.showinfo("Matrix Styles Modified", f"Interface re-mapped cleanly to: {profile}")
 
 if __name__ == "__main__":
     root = tk.Tk()
