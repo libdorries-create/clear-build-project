@@ -321,6 +321,7 @@ class HardenedValidatorApp:
             from reportlab.graphics.shapes import Drawing
             from reportlab.graphics.charts.piecharts import Pie
             from reportlab.graphics.charts.legends import Legend
+            from reportlab.lib import colors
             
             doc = SimpleDocTemplate(fp, pagesize=letter)
             story = [
