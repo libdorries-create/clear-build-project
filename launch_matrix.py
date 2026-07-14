@@ -132,9 +132,25 @@ class HardenedValidatorApp:
 
     def apply_theme_profile(self):
         profile = self.theme_choice.get()
-        bg, fg, accent = ("#1a1a1a", "#00ff66", "#00ff66") if profile == "Matrix Dark (Default)" else (("#0f172a", "#f43f5e", "#38bdf8") if profile == "Cyberpunk Neon" else ("#334155", "#cbd5e1", "#f1f5f9"))
-        for w in [self.root, self.tab1, self.tab2, self.tab3, self.tab4, self.tab5]: w.configure(bg=bg)
-        self.theme_status.configure(text=f"Applied Layout Palette Scheme: {profile}", fg=accent)
+        
+        # Globally bind exact color profiles so all background calculation tabs share states instantly
+        if profile == "Matrix Dark (Default)":
+            self.current_bg, self.current_fg, self.current_accent = "#1a1a1a", "#00ff66", "#00ff66"
+            self.pdf_bg, self.pdf_text, self.pdf_title = '#1a1a1a', '#00ff66', '#00ff66'
+            self.chart_colors = ['#00ff66', '#00bcff', '#a855f7']
+        elif profile == "Cyberpunk Neon":
+            self.current_bg, self.current_fg, self.current_accent = "#0f172a", "#f43f5e", "#38bdf8"
+            self.pdf_bg, self.pdf_text, self.pdf_title = '#0f172a', '#ffffff', '#38bdf8'
+            self.chart_colors = ['#f43f5e', '#38bdf8', '#eab308']
+        else: # Classic Slate
+            self.current_bg, self.current_fg, self.current_accent = "#334155", "#cbd5e1", "#cbd5e1"
+            self.pdf_bg, self.pdf_text, self.pdf_title = '#cbd5e1', '#1e293b', '#0f172a'
+            self.chart_colors = ['#475569', '#94a3b8', '#cbd5e1']
+            
+        for w in [self.root, self.tab1, self.tab2, self.tab3, self.tab4, self.tab5]: 
+            w.configure(bg=self.current_bg)
+            
+        self.theme_status.configure(text=f"Applied Layout Palette Scheme: {profile}", fg=self.current_accent)
         messagebox.showinfo("Matrix Styles Modified", f"Interface re-mapped cleanly to: {profile}")
 
     def setup_history_tab(self):
@@ -278,22 +294,14 @@ class HardenedValidatorApp:
             from reportlab.graphics.charts.barcharts import HorizontalBarChart
             from reportlab.lib import colors
             
-            # Math-calibrated accessibility contrast ratios for pristine typography legibility
-            theme = self.theme_choice.get()
-            if theme == "Matrix Dark (Default)":
-                bg_hex, text_hex, title_hex = '#1a1a1a', '#00ff66', '#00ff66'
-            elif theme == "Cyberpunk Neon":
-                bg_hex, text_hex, title_hex = '#0f172a', '#ffffff', '#38bdf8'
-            else: # Classic Slate (Calibrated Light Canvas Matrix)
-                bg_hex, text_hex, title_hex = '#cbd5e1', '#1e293b', '#0f172a'
-                
+            # Directly pull synchronized color metrics from global class memory states
             custom_styles = getSampleStyleSheet()
-            title_style = ParagraphStyle('CustomTitle', parent=custom_styles['Title'], textColor=colors.HexColor(title_hex))
-            body_style = ParagraphStyle('CustomBody', parent=custom_styles['BodyText'], textColor=colors.HexColor(text_hex), leading=14)
+            title_style = ParagraphStyle('CustomTitle', parent=custom_styles['Title'], textColor=colors.HexColor(self.pdf_title))
+            body_style = ParagraphStyle('CustomBody', parent=custom_styles['BodyText'], textColor=colors.HexColor(self.pdf_text), leading=14)
 
             def draw_background(canvas, doc_obj):
                 canvas.saveState()
-                canvas.setFillColor(colors.HexColor(bg_hex))
+                canvas.setFillColor(colors.HexColor(self.pdf_bg))
                 canvas.rect(0, 0, letter, letter, fill=True, stroke=False)
                 canvas.restoreState()
 
@@ -355,21 +363,13 @@ class HardenedValidatorApp:
             from reportlab.graphics.charts.legends import Legend
             from reportlab.lib import colors
             
-            theme = self.theme_choice.get()
-            if theme == "Matrix Dark (Default)":
-                bg_hex, text_hex, title_hex = '#1a1a1a', '#00ff66', '#00ff66'
-            elif theme == "Cyberpunk Neon":
-                bg_hex, text_hex, title_hex = '#0f172a', '#ffffff', '#eab308'
-            else: # Classic Slate Calibrated Profile
-                bg_hex, text_hex, title_hex = '#cbd5e1', '#1e293b', '#0f172a'
-                
             custom_styles_econ = getSampleStyleSheet()
-            title_style_econ = ParagraphStyle('CustomTitleEcon', parent=custom_styles_econ['Title'], textColor=colors.HexColor(title_hex))
-            body_style_econ = ParagraphStyle('CustomBodyEcon', parent=custom_styles_econ['BodyText'], textColor=colors.HexColor(text_hex), leading=14)
+            title_style_econ = ParagraphStyle('CustomTitleEcon', parent=custom_styles_econ['Title'], textColor=colors.HexColor(self.pdf_title))
+            body_style_econ = ParagraphStyle('CustomBodyEcon', parent=custom_styles_econ['BodyText'], textColor=colors.HexColor(self.pdf_text), leading=14)
 
             def draw_background_econ(canvas, doc_obj):
                 canvas.saveState()
-                canvas.setFillColor(colors.HexColor(bg_hex))
+                canvas.setFillColor(colors.HexColor(self.pdf_bg))
                 canvas.rect(0, 0, letter, letter, fill=True, stroke=False)
                 canvas.restoreState()
 
@@ -392,13 +392,7 @@ class HardenedValidatorApp:
             pc.slices.strokeWidth = 0.5
             
             # Dynamic theme alignment filter mapping loops
-            theme = self.theme_choice.get()
-            if theme == "Matrix Dark (Default)":
-                c_list = [colors.HexColor('#00ff66'), colors.HexColor('#00bcff'), colors.HexColor('#a855f7')]
-            elif theme == "Cyberpunk Neon":
-                c_list = [colors.HexColor('#f43f5e'), colors.HexColor('#38bdf8'), colors.HexColor('#eab308')]
-            else:
-                c_list = [colors.HexColor('#475569'), colors.HexColor('#94a3b8'), colors.HexColor('#cbd5e1')]
+            c_list = [colors.HexColor(c) for c in self.chart_colors]
                 
             for i, color in enumerate(c_list):
                 pc.slices[i].fillColor = color
