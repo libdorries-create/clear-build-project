@@ -313,7 +313,16 @@ class HardenedValidatorApp:
             
             d.add(chart)
             story.append(d)
-            doc.build(story)
+            # Dynamic canvas callback to paint the background paper to match your active UI selection
+            def draw_background(canvas, doc_obj):
+                canvas.saveState()
+                theme_choice = self.theme_choice.get()
+                bg_hex = '#1a1a1a' if theme_choice == "Matrix Dark (Default)" else ('#0f172a' if theme_choice == "Cyberpunk Neon" else '#f8fafc')
+                canvas.setFillColor(colors.HexColor(bg_hex))
+                canvas.rect(0, 0, letter[0], letter[1], fill=True, stroke=False)
+                canvas.restoreState()
+                
+            doc.build(story, onFirstPage=draw_background)
             messagebox.showinfo("Export Successful", "Crisp vector-drawn Philosophical ledger successfully printed to PDF.")
         except Exception as e: messagebox.showerror("Vector Render Failure", str(e))
 
@@ -370,7 +379,16 @@ class HardenedValidatorApp:
             d.add(pc)
             d.add(leg)
             story.append(d)
-            doc.build(story)
+            # Dynamic canvas callback to paint the background paper to match your active UI selection
+            def draw_background(canvas, doc_obj):
+                canvas.saveState()
+                theme_choice = self.theme_choice.get()
+                bg_hex = '#1a1a1a' if theme_choice == "Matrix Dark (Default)" else ('#0f172a' if theme_choice == "Cyberpunk Neon" else '#f8fafc')
+                canvas.setFillColor(colors.HexColor(bg_hex))
+                canvas.rect(0, 0, letter[0], letter[1], fill=True, stroke=False)
+                canvas.restoreState()
+                
+            doc.build(story, onFirstPage=draw_background)
             messagebox.showinfo("Export Successful", "Crisp vector-drawn Macroeconomic analysis report printed to PDF.")
         except Exception as e: messagebox.showerror("Vector Render Failure", str(e))
 
