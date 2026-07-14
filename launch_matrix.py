@@ -286,24 +286,28 @@ class HardenedValidatorApp:
         story = [Paragraph("Empirical Math Data Validation Audit Report", getSampleStyleSheet()['Title']), Spacer(1, 12), Paragraph(self.math_report_txt.replace('\n', '<br/>'), getSampleStyleSheet()['BodyText'])]
         doc.build(story); messagebox.showinfo("Export Successful", "PDF generated.")
 
-    def export_philosophy_pdf(self):
+        def export_philosophy_pdf(self):
         fp = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF Files", "*.pdf")])
         if not fp: return
         try:
             from reportlab.graphics.shapes import Drawing
             from reportlab.graphics.charts.barcharts import HorizontalBarChart
             from reportlab.lib import colors
+            from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
             
-            # Directly pull synchronized color metrics from global class memory states
+            theme = self.theme_choice.get()
+            
+            # Math contrast scaling translations
+            if theme == "Matrix Dark (Default)":
+                bg_hex, text_hex, title_hex, bar_hex = '#1a1a1a', '#00ff66', '#00ff66', '#00ff66'
+            elif theme == "Cyberpunk Neon":
+                bg_hex, text_hex, title_hex, bar_hex = '#0f172a', '#ffffff', '#38bdf8', '#f43f5e'
+            else: # Classic Slate - Force Clean High-Contrast Layout
+                bg_hex, text_hex, title_hex, bar_hex = '#ffffff', '#1e293b', '#334155', '#475569'
+                
             custom_styles = getSampleStyleSheet()
-            title_style = ParagraphStyle('CustomTitle', parent=custom_styles['Title'], textColor=colors.HexColor(self.pdf_title))
-            body_style = ParagraphStyle('CustomBody', parent=custom_styles['BodyText'], textColor=colors.HexColor(self.pdf_text), leading=14)
-
-            def draw_background(canvas, doc_obj):
-                canvas.saveState()
-                canvas.setFillColor(colors.HexColor(self.pdf_bg))
-                canvas.rect(0, 0, letter, letter, fill=True, stroke=False)
-                canvas.restoreState()
+            title_style = ParagraphStyle('CustomTitle', parent=custom_styles['Title'], textColor=colors.HexColor(title_hex))
+            body_style = ParagraphStyle('CustomBody', parent=custom_styles['BodyText'], textColor=colors.HexColor(text_hex), leading=14)
 
             doc = SimpleDocTemplate(fp, pagesize=letter)
             story = [
@@ -313,48 +317,38 @@ class HardenedValidatorApp:
                 Spacer(1, 25)
             ]
             
-            d = Drawing(450, 200)
+            d = Drawing(450, 180)
             chart = HorizontalBarChart()
             chart.x = 90
-            chart.y = 20
-            chart.height = 160
+            chart.y = 15
+            chart.height = 150
             chart.width = 320
             chart.data = [list(self.percentages.values())]
             chart.categoryAxis.categoryNames = list(self.percentages.keys())
             chart.categoryAxis.labels.fontSize = 9
             chart.categoryAxis.labels.fontName = 'Helvetica'
+            chart.categoryAxis.labels.fillColor = colors.HexColor(text_hex)
             chart.valueAxis.valueMin = 0
             chart.valueAxis.valueMax = 100
             chart.valueAxis.valueStep = 20
             chart.valueAxis.labels.fontSize = 8
-            
-            # Live production framework to sync layout colors to the active UI palette dropdown
-            theme = self.theme_choice.get()
-            if theme == "Matrix Dark (Default)":
-                bar_color = colors.HexColor('#00ff66')
-            elif theme == "Cyberpunk Neon":
-                bar_color = colors.HexColor('#f43f5e')
-            else:
-                bar_color = colors.HexColor('#475569')
-                
-            chart.bars.fillColor = bar_color
+            chart.valueAxis.labels.fillColor = colors.HexColor(text_hex)
+            chart.bars.fillColor = colors.HexColor(bar_hex)
             
             d.add(chart)
             story.append(d)
-            # Dynamic canvas callback to paint the background paper to match your active UI selection
-            def draw_background(canvas, doc_obj):
+            
+            def draw_bg(canvas, doc_obj):
                 canvas.saveState()
-                theme_choice = self.theme_choice.get()
-                bg_hex = '#1a1a1a' if theme_choice == "Matrix Dark (Default)" else ('#0f172a' if theme_choice == "Cyberpunk Neon" else '#f8fafc')
                 canvas.setFillColor(colors.HexColor(bg_hex))
-                canvas.rect(0, 0, letter[0], letter[1], fill=True, stroke=False)
+                canvas.rect(0, 0, letter, letter, fill=True, stroke=False)
                 canvas.restoreState()
                 
-            doc.build(story, onFirstPage=draw_background)
+            doc.build(story, onFirstPage=draw_bg)
             messagebox.showinfo("Export Successful", "Crisp vector-drawn Philosophical ledger successfully printed to PDF.")
         except Exception as e: messagebox.showerror("Vector Render Failure", str(e))
 
-    def export_economic_pdf(self):
+        def export_economic_pdf(self):
         fp = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF Files", "*.pdf")])
         if not fp: return
         try:
@@ -362,16 +356,22 @@ class HardenedValidatorApp:
             from reportlab.graphics.charts.piecharts import Pie
             from reportlab.graphics.charts.legends import Legend
             from reportlab.lib import colors
+            from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
             
+            theme = self.theme_choice.get()
+            if theme == "Matrix Dark (Default)":
+                bg_hex, text_hex, title_hex = '#1a1a1a', '#00ff66', '#00ff66'
+                c_list = [colors.HexColor('#00ff66'), colors.HexColor('#00bcff'), colors.HexColor('#a855f7')]
+            elif theme == "Cyberpunk Neon":
+                bg_hex, text_hex, title_hex = '#0f172a', '#ffffff', '#eab308'
+                c_list = [colors.HexColor('#f43f5e'), colors.HexColor('#38bdf8'), colors.HexColor('#eab308')]
+            else: # Classic Slate - Force Clean High-Contrast Layout
+                bg_hex, text_hex, title_hex = '#ffffff', '#1e293b', '#334155'
+                c_list = [colors.HexColor('#475569'), colors.HexColor('#94a3b8'), colors.HexColor('#cbd5e1')]
+                
             custom_styles_econ = getSampleStyleSheet()
-            title_style_econ = ParagraphStyle('CustomTitleEcon', parent=custom_styles_econ['Title'], textColor=colors.HexColor(self.pdf_title))
-            body_style_econ = ParagraphStyle('CustomBodyEcon', parent=custom_styles_econ['BodyText'], textColor=colors.HexColor(self.pdf_text), leading=14)
-
-            def draw_background_econ(canvas, doc_obj):
-                canvas.saveState()
-                canvas.setFillColor(colors.HexColor(self.pdf_bg))
-                canvas.rect(0, 0, letter, letter, fill=True, stroke=False)
-                canvas.restoreState()
+            title_style_econ = ParagraphStyle('CustomTitleEcon', parent=custom_styles_econ['Title'], textColor=colors.HexColor(title_hex))
+            body_style_econ = ParagraphStyle('CustomBodyEcon', parent=custom_styles_econ['BodyText'], textColor=colors.HexColor(text_hex), leading=14)
 
             doc = SimpleDocTemplate(fp, pagesize=letter)
             story = [
@@ -390,12 +390,7 @@ class HardenedValidatorApp:
             pc.data = list(self.econ_percentages.values())
             pc.labels = [f"{v}%" for v in self.econ_percentages.values()]
             pc.slices.strokeWidth = 0.5
-            
-            # Dynamic theme alignment filter mapping loops
-            c_list = [colors.HexColor(c) for c in self.chart_colors]
-                
-            for i, color in enumerate(c_list):
-                pc.slices[i].fillColor = color
+            for i, color in enumerate(c_list): pc.slices[i].fillColor = color
                 
             leg = Legend()
             leg.x = 220
@@ -411,16 +406,14 @@ class HardenedValidatorApp:
             d.add(pc)
             d.add(leg)
             story.append(d)
-            # Dynamic canvas callback to paint the background paper to match your active UI selection
-            def draw_background(canvas, doc_obj):
+            
+            def draw_bg_econ(canvas, doc_obj):
                 canvas.saveState()
-                theme_choice = self.theme_choice.get()
-                bg_hex = '#1a1a1a' if theme_choice == "Matrix Dark (Default)" else ('#0f172a' if theme_choice == "Cyberpunk Neon" else '#f8fafc')
                 canvas.setFillColor(colors.HexColor(bg_hex))
-                canvas.rect(0, 0, letter[0], letter[1], fill=True, stroke=False)
+                canvas.rect(0, 0, letter, letter, fill=True, stroke=False)
                 canvas.restoreState()
                 
-            doc.build(story, onFirstPage=draw_background)
+            doc.build(story, onFirstPage=draw_bg_econ)
             messagebox.showinfo("Export Successful", "Crisp vector-drawn Macroeconomic analysis report printed to PDF.")
         except Exception as e: messagebox.showerror("Vector Render Failure", str(e))
 
