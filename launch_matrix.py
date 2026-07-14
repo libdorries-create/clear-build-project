@@ -277,11 +277,21 @@ class HardenedValidatorApp:
             from reportlab.graphics.charts.barcharts import HorizontalBarChart
             from reportlab.lib import colors
             
+            # Establish dynamic contrast color profiles based on active interface choices
+            theme = self.theme_choice.get()
+            text_hex = '#ffffff' if theme in ["Matrix Dark (Default)", "Cyberpunk Neon"] else '#1e293b'
+            title_hex = '#00ff66' if theme == "Matrix Dark (Default)" else ('#38bdf8' if theme == "Cyberpunk Neon" else '#0f172a')
+            
+            # Re-generate custom high-contrast typography style structures
+            custom_styles = getSampleStyleSheet()
+            title_style = ParagraphStyle('CustomTitle', parent=custom_styles['Title'], textColor=colors.HexColor(title_hex))
+            body_style = ParagraphStyle('CustomBody', parent=custom_styles['BodyText'], textColor=colors.HexColor(text_hex), leading=14)
+
             doc = SimpleDocTemplate(fp, pagesize=letter)
             story = [
-                Paragraph("Quantum Philosophical Proposition Ledger", getSampleStyleSheet()['Title']),
+                Paragraph("Quantum Philosophical Proposition Ledger", title_style),
                 Spacer(1, 15),
-                Paragraph(f"<b>Analyzed Structural Matrix Sequence:</b><br/>{self.current_statement}", getSampleStyleSheet()['BodyText']),
+                Paragraph(f"<b>Analyzed Structural Matrix Sequence:</b><br/>{self.current_statement}", body_style),
                 Spacer(1, 25)
             ]
             
@@ -335,11 +345,19 @@ class HardenedValidatorApp:
             from reportlab.graphics.charts.legends import Legend
             from reportlab.lib import colors
             
+            theme = self.theme_choice.get()
+            text_hex = '#ffffff' if theme in ["Matrix Dark (Default)", "Cyberpunk Neon"] else '#1e293b'
+            title_hex = '#00ff66' if theme == "Matrix Dark (Default)" else ('#eab308' if theme == "Cyberpunk Neon" else '#0f172a')
+            
+            custom_styles_econ = getSampleStyleSheet()
+            title_style_econ = ParagraphStyle('CustomTitleEcon', parent=custom_styles_econ['Title'], textColor=colors.HexColor(title_hex))
+            body_style_econ = ParagraphStyle('CustomBodyEcon', parent=custom_styles_econ['BodyText'], textColor=colors.HexColor(text_hex), leading=14)
+
             doc = SimpleDocTemplate(fp, pagesize=letter)
             story = [
-                Paragraph("Macroeconomic Cycle Fit Assessment", getSampleStyleSheet()['Title']),
+                Paragraph("Macroeconomic Cycle Fit Assessment", title_style_econ),
                 Spacer(1, 15),
-                Paragraph(f"<b>Source Parameters Scanned:</b><br/>{self.current_econ_statement}", getSampleStyleSheet()['BodyText']),
+                Paragraph(f"<b>Source Parameters Scanned:</b><br/>{self.current_econ_statement}", body_style_econ),
                 Spacer(1, 25)
             ]
             
