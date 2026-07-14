@@ -446,8 +446,7 @@ if __name__ == "__main__":
             plt.title("Discipline Composition Spectrum Analysis")
             plt.xlabel("Percentage Weight (%)")
             plt.tight_layout()
-            plt.savefig("temp_phil_chart.png", dpi=150)
-            plt.close()
+            
 
             # 2. Compile report lab file structure layout
             from reportlab.platypus import Image as ReportLabImage
@@ -480,8 +479,7 @@ if __name__ == "__main__":
             plt.pie(slices, labels=labels, autopct='%1.1f%%', colors=colors_list, startangle=140)
             plt.title("Macroeconomic Cycle Structural Model Fit Breakdown")
             plt.tight_layout()
-            plt.savefig("temp_econ_chart.png", dpi=150)
-            plt.close()
+            
 
             # 2. Build out formal page document structure
             from reportlab.platypus import Image as ReportLabImage
