@@ -56,6 +56,11 @@ class HardenedValidatorApp:
         self.tab4 = tk.Frame(self.notebook, bg="#1a1a1a")
         self.notebook.add(self.tab4, text="UI Matrix Theme Manager")
         self.setup_theme_tab()
+        
+        # --- HISTORICAL ANALYTICS LEDGER DASHBOARD TAB ---
+        self.tab5 = tk.Frame(self.notebook, bg="#1a1a1a")
+        self.notebook.add(self.tab5, text="Historical Database Analytics")
+        self.setup_history_tab()
 
     def execute_secure_backup(self):
         try:
@@ -128,7 +133,7 @@ class HardenedValidatorApp:
     def apply_theme_profile(self):
         profile = self.theme_choice.get()
         bg, fg, accent = ("#1a1a1a", "#00ff66", "#00ff66") if profile == "Matrix Dark (Default)" else (("#0f172a", "#f43f5e", "#38bdf8") if profile == "Cyberpunk Neon" else ("#334155", "#cbd5e1", "#f1f5f9"))
-        for w in [self.root, self.tab1, self.tab2, self.tab3, self.tab4]: w.configure(bg=bg)
+        for w in [self.root, self.tab1, self.tab2, self.tab3, self.tab4, self.tab5]: w.configure(bg=bg)
         self.theme_status.configure(text=f"Applied Layout Palette Scheme: {profile}", fg=accent)
         messagebox.showinfo("Matrix Styles Modified", f"Interface re-mapped cleanly to: {profile}")
 
@@ -325,6 +330,49 @@ class HardenedValidatorApp:
             if os.path.exists("temp_econ_chart.png"): os.remove("temp_econ_chart.png")
             messagebox.showinfo("Export Successful", "Macroeconomic report chart printed to PDF.")
         except Exception as e: messagebox.showerror("PDF Render Failure", str(e))
+
+    def setup_history_tab(self):
+        tk.Label(self.tab5, text="SQLITE DATABASE ARCHIVE TRANSACTION LOGS", bg="#1a1a1a", fg="#00bcff", font=("Helvetica", 11, "bold")).pack(pady=15)
+        
+        # Build a scrollable display console area
+        self.history_txt = tk.Text(self.tab5, height=12, width=65, bg="#2d2d2d", fg="white", font=("Courier", 9), bd=0)
+        self.history_txt.pack(padx=20, pady=5)
+        
+        tk.Button(self.tab5, text="🔄 REFRESH LEDGER STATISTICS", command=self.refresh_history_ledger, bg="#00bcff", fg="#1a1a1a", font=("Helvetica", 10, "bold"), bd=0, padx=12, pady=6).pack(pady=15)
+        self.refresh_history_ledger()
+
+    def refresh_history_ledger(self):
+        self.history_txt.configure(state="normal")
+        self.history_txt.delete("1.0", tk.END)
+        self.history_txt.insert(tk.END, f"=== SYSTEM ARCHIVE SYNC STATUS: SECURE ({datetime.now().strftime('%H:%M:%S')}) ===\n\n")
+        
+        try:
+            # 1. Fetch historical mathematical summaries
+            self.cursor.execute("SELECT timestamp, summary FROM math_scans ORDER BY id DESC LIMIT 5")
+            math_rows = self.cursor.fetchall()
+            self.history_txt.insert(tk.END, ">> LATEST PARAMETRIC MATH VALIDATIONS:\n")
+            if not math_rows: self.history_txt.insert(tk.END, " [No transaction entries archived yet.]\n")
+            for r in math_rows: self.history_txt.insert(tk.END, f" * [{r[0]}] {r[1].split('\n')[1]}\n")
+            
+            # 2. Fetch historical philosophical weights
+            self.cursor.execute("SELECT timestamp, weights FROM philosophy_scans ORDER BY id DESC LIMIT 3")
+            phil_rows = self.cursor.fetchall()
+            self.history_txt.insert(tk.END, "\n>> LATEST CONCEPTUAL THEORETICAL COEFFICIENTS:\n")
+            if not phil_rows: self.history_txt.insert(tk.END, " [No transaction entries archived yet.]\n")
+            for r in phil_rows: self.history_txt.insert(tk.END, f" * [{r[0]}] {r[1][:55]}...\n")
+            
+            # 3. Fetch historical macroeconomic fitting bounds
+            self.cursor.execute("SELECT timestamp, weights FROM economic_scans ORDER BY id DESC LIMIT 3")
+            econ_rows = self.cursor.fetchall()
+            self.history_txt.insert(tk.END, "\n>> LATEST HISTORICAL CYCLE MODEL FIT WEIGHTS:\n")
+            if not econ_rows: self.history_txt.insert(tk.END, " [No transaction entries archived yet.]\n")
+            for r in econ_rows: self.history_txt.insert(tk.END, f" * [{r[0]}] {r[1]}\n")
+            
+        except Exception as e:
+            self.history_txt.insert(tk.END, f"\n⚠️ Ledger Database Connection Interrupt: {str(e)}")
+            
+        self.history_txt.configure(state="disabled")
+
 
 if __name__ == "__main__":
     root = tk.Tk()
