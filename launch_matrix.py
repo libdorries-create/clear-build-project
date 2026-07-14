@@ -36,7 +36,7 @@ class HardenedValidatorApp:
         self.data_x, self.data_y, self.math_report_txt = None, None, ""
         
         # --- NLP MATRIX SENTIMENT STATE ARRAYS ---
-        self.phil_sentiment, self.econ_sentiment = {"Positivity": 0.0, "Negativity": 0.0, "Objectivity": 100.0}, {"Positivity": 0.0, "Negativity": 0.0, "Objectivity": 100.0}""
+        self.phil_sentiment, self.econ_sentiment = {"Positivity": 0.0, "Negativity": 0.0, "Objectivity": 100.0}, {"Positivity": 0.0, "Negativity": 0.0, "Objectivity": 100.0}
 
         self.execute_secure_backup()
         self.initialize_hardened_ledger()
