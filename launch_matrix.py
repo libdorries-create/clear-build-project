@@ -335,13 +335,20 @@ class HardenedValidatorApp:
             d.add(chart)
             story.append(d)
             
+            from reportlab.platypus import BaseDocTemplate, PageTemplate, Frame
+            # Create a custom canvas page template structure to defuse the empty tuple trap
+            doc = BaseDocTemplate(fp, pagesize=letter)
+            frame = Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height, id='normal')
+            
             def draw_bg(canvas, doc_obj):
                 canvas.saveState()
                 canvas.setFillColor(colors.HexColor(bg_hex))
                 canvas.rect(0, 0, letter, letter, fill=True, stroke=False)
                 canvas.restoreState()
                 
-            doc.build(story, onFirstPage=draw_bg)
+            template = PageTemplate(id='BackgroundProfile', frames=frame, onPage=draw_bg)
+            doc.addPageTemplates([template])
+            doc.build(story)
             messagebox.showinfo("Export Successful", "Crisp vector-drawn Philosophical ledger successfully printed to PDF.")
         except Exception as e: messagebox.showerror("Vector Render Failure", str(e))
 
@@ -403,13 +410,19 @@ class HardenedValidatorApp:
             d.add(leg)
             story.append(d)
             
+            from reportlab.platypus import BaseDocTemplate, PageTemplate, Frame
+            doc = BaseDocTemplate(fp, pagesize=letter)
+            frame_econ = Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height, id='normal')
+            
             def draw_bg_econ(canvas, doc_obj):
                 canvas.saveState()
                 canvas.setFillColor(colors.HexColor(bg_hex))
                 canvas.rect(0, 0, letter, letter, fill=True, stroke=False)
                 canvas.restoreState()
                 
-            doc.build(story, onFirstPage=draw_bg_econ)
+            template_econ = PageTemplate(id='EconBackgroundProfile', frames=frame_econ, onPage=draw_bg_econ)
+            doc.addPageTemplates([template_econ])
+            doc.build(story)
             messagebox.showinfo("Export Successful", "Crisp vector-drawn Macroeconomic analysis report printed to PDF.")
         except Exception as e: messagebox.showerror("Vector Render Failure", str(e))
 
