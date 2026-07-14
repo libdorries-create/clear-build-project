@@ -324,8 +324,15 @@ class HardenedValidatorApp:
         austrian = len(re.findall(r'(malinvestment|artificial|printing|stimulus|credit|inflationary|hayek|mises|calculation)', txt, re.I))
         classical = len(re.findall(r'(productivity|manufacturing|industrial|trade|commodity|smith|ricardo|supply)', txt, re.I))
         keynesian = len(re.findall(r'(multiplier|aggregate|intervention|spending|deficit|fiscal|liquidity|demand)', txt, re.I))
-        tot = max(1, austrian + classical + keynesian)
-        self.econ_percentages = {"Austrian School": round((austrian/tot)*100, 2), "Classical/Production": round((classical/tot)*100, 2), "Keynesian/Aggregate": round((keynesian/tot)*100, 2)}
+        statutory_law = len(re.findall(r'(constitutional|statutory|governance|regulation|authority|legal|decree|jurisdiction|legislative)', txt, re.I))
+        
+        tot = max(1, austrian + classical + keynesian + statutory_law)
+        self.econ_percentages = {
+            "Austrian School": round((austrian/tot)*100, 2),
+            "Classical/Production": round((classical/tot)*100, 2),
+            "Keynesian/Aggregate": round((keynesian/tot)*100, 2),
+            "Statutory Governance": round((statutory_law/tot)*100, 2)
+        }
         try:
             self.cursor.execute("INSERT INTO economic_scans (timestamp, text_blob, weights) VALUES (?, ?, ?)", (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), txt, str(self.econ_percentages)))
             self.conn.commit()
