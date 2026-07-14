@@ -213,41 +213,9 @@ class HardenedValidatorApp:
         try:
             self.cursor.execute("INSERT INTO philosophy_scans (timestamp, text_blob, weights) VALUES (?, ?, ?)", (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), txt, str(self.percentages)))
             self.conn.commit()
-            
-            # Sync graph aesthetics directly with active UI dropdown profile choice
-            theme = self.theme_choice.get()
-            bar_color = '#00ff66' if theme == "Matrix Dark (Default)" else ('#f43f5e' if theme == "Cyberpunk Neon" else '#475569')
-            bg_color = '#1a1a1a' if theme == "Matrix Dark (Default)" else ('#0f172a' if theme == "Cyberpunk Neon" else '#f8fafc')
-            text_color = 'white' if theme in ["Matrix Dark (Default)", "Cyberpunk Neon"] else 'black'
-            
-            fig, ax = plt.subplots(figsize=(6, 3.5))
-            fig.patch.set_facecolor(bg_color)
-            ax.set_facecolor(bg_color)
-            
-            schools = list(self.percentages.keys())
-            weights = list(self.percentages.values())
-            
-            bars = ax.barh(schools, weights, color=bar_color, edgecolor=text_color, height=0.6)
-            ax.set_title("Discipline Composition Spectrum Analysis", color=text_color, fontsize=11, fontweight='bold', pad=10)
-            ax.set_xlabel("Percentage Weight (%)", color=text_color, fontsize=9)
-            
-            # Explicitly lock axis label ticks to prevent font drop out
-            ax.set_yticks(range(len(schools)))
-            ax.set_yticklabels(schools, color=text_color, fontsize=9)
-            ax.set_xticklabels([f"{int(x)}%" for x in ax.get_xticks()], color=text_color, fontsize=8)
-            
-            ax.spines['bottom'].set_color(text_color)
-            ax.spines['left'].set_color(text_color)
-            for spine in ['top', 'right']: ax.spines[spine].set_visible(False)
-            ax.grid(True, axis='x', linestyle=':', alpha=0.3, color=text_color)
-            
-            plt.tight_layout()
-            plt.savefig("temp_phil_chart.png", dpi=150, facecolor=fig.get_facecolor(), edgecolor='none')
-            plt.close()
-            
             self.pdf_btn.configure(state="normal")
             messagebox.showinfo("Conceptual Analysis Matrix Verified", f"Theory Breakdown Metrics:\n{self.percentages}")
-        except Exception as e: print("Phil chart error:", e)
+        except Exception as e: messagebox.showerror("Database Write Failure", str(e))
 
     def validate_economics(self):
         txt = self.econ_text_box.get("1.0", tk.END)
