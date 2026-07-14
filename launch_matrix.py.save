@@ -1,0 +1,247 @@
+import matplotlib
+matplotlib.use('TkAgg')
+
+import tkinter as tk
+from tkinter import messagebox, filedialog, ttk
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.optimize import curve_fit
+from scipy.stats import shapiro
+import re
+import os
+import shutil
+import sqlite3
+from datetime import datetime
+
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib import colors
+
+def linear_theory(x, m, c): return m * x + c
+def polynomial_theory(x, a, b, c): return a * (x**2) + b * x + c
+
+class HardenedValidatorApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Secured Multi-Discipline Analytical Validation Engine")
+        self.root.geometry("640x550")
+        self.root.configure(bg="#1a1a1a")
+        
+        self.percentages, self.econ_percentages = {}, {}
+        self.current_statement, self.current_econ_statement = "", ""
+        self.data_x, self.data_y, self.math_report_txt = None, None, ""
+
+        self.execute_secure_backup()
+        self.initialize_hardened_ledger()
+
+        self.notebook = ttk.Notebook(root)
+        self.notebook.pack(fill="both", expand=True, padx=10, pady=10)
+
+        self.tab1 = tk.Frame(self.notebook, bg="#1a1a1a")
+        self.notebook.add(self.tab1, text="Empirical Math Data Validator")
+        self.setup_mathematical_tab()
+
+        self.tab2 = tk.Frame(self.notebook, bg="#1a1a1a")
+        self.notebook.add(self.tab2, text="Philosophical Concept Tester")
+        self.setup_philosophical_tab()
+
+        self.tab3 = tk.Frame(self.notebook, bg="#1a1a1a")
+        self.notebook.add(self.tab3, text="Macro-Economic Cycle Tester")
+        self.setup_economic_tab()
+    def execute_secure_backup(self):
+        try:
+            b_dir = os.path.expanduser("~/Desktop/Workspace_Backups")
+            os.makedirs(b_dir, exist_ok=True)
+            ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+            shutil.copy("launch_matrix.py", f"{b_dir}/safe_snap_{ts}.py")
+        except: pass
+
+    def initialize_hardened_ledger(self):
+        try:
+            self.conn = sqlite3.connect("project_archive.db", check_same_thread=False)
+            self.cursor = self.conn.cursor()
+            self.cursor.execute("CREATE TABLE IF NOT EXISTS math_scans (id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp TEXT, summary TEXT)")
+            self.cursor.execute("CREATE TABLE IF NOT EXISTS philosophy_scans (id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp TEXT, text_blob TEXT, weights TEXT)")
+            self.cursor.execute("CREATE TABLE IF NOT EXISTS economic_scans (id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp TEXT, text_blob TEXT, weights TEXT)")
+            self.conn.commit()
+        except: pass
+
+    def setup_mathematical_tab(self):
+        tk.Label(self.tab1, text="SECURED MATHEMATICAL MODEL MATRIX SECTOR", bg="#1a1a1a", fg="#00ff66", font=("Helvetica", 11, "bold")).pack(pady=15)
+        self.u_btn = tk.Button(self.tab1, text="1. INJECT NUMERIC DATA DATASET (.csv)", command=self.load_data, bg="#2d2d2d", fg="white", font=("Helvetica", 10, "bold"), bd=0, padx=10, pady=5)
+        self.u_btn.pack(pady=10)
+        self.status_lbl = tk.Label(self.tab1, text="Isolated boundary clear. No data loaded.", bg="#1a1a1a", fg="#888888", font=("Helvetica", 9, "italic"))
+        self.status_lbl.pack(pady=5)
+        self.m_frame = tk.Frame(self.tab1, bg="#1a1a1a")
+        self.m_frame.pack(pady=15)
+        self.scan_btn = tk.Button(self.m_frame, text="2. VALIDATE CURVES", command=self.validate_data, bg="#00ff66", fg="#1a1a1a", font=("Helvetica", 11, "bold"), bd=0, padx=15, pady=8, state="disabled")
+        self.scan_btn.pack(side="left", padx=5)
+        self.math_pdf_btn = tk.Button(self.m_frame, text="3. EXPORT AUDIT PDF", command=self.export_math_pdf, bg="#eab308", fg="#1a1a1a", font=("Helvetica", 11, "bold"), bd=0, padx=15, pady=8, state="disabled")
+        self.math_pdf_btn.pack(side="left", padx=5)
+
+    def setup_philosophical_tab(self):
+        tk.Label(self.tab2, text="QUANTUM PHILOSOPHICAL THEORY EVALUATOR", bg="#1a1a1a", fg="#00bcff", font=("Helvetica", 11, "bold")).pack(pady=15)
+        self.text_box = tk.Text(self.tab2, height=7, width=55, bg="#2d2d2d", fg="white", insertbackground="white", bd=0, highlightthickness=1, highlightbackground="#333333")
+        self.text_box.pack(padx=25, pady=5)
+        self.text_box.insert(tk.END, "Our logical contemplation and pure reason allow the mind to map out the universe, yet we cannot ignore the raw empirical data provided by sensory observations. Faced with an indifferent, meaningless void, human thought must cultivate absolute emotional control, enduring hardship with unshakeable stoic calm.")
+        self.p_frame = tk.Frame(self.tab2, bg="#1a1a1a")
+        self.p_frame.pack(pady=15)
+        tk.Button(self.p_frame, text="2. TEST PROPOSITION", command=self.validate_philosophy, bg="#00bcff", fg="#1a1a1a", font=("Helvetica", 11, "bold"), bd=0, padx=15, pady=8).pack(side="left", padx=5)
+        self.pdf_btn = tk.Button(self.p_frame, text="3. EXPORT PHILOSOPHY PDF", command=self.export_philosophy_pdf, bg="#eab308", fg="#1a1a1a", font=("Helvetica", 11, "bold"), bd=0, padx=15, pady=8, state="disabled")
+        self.pdf_btn.pack(side="left", padx=5)
+
+    def setup_economic_tab(self):
+        tk.Label(self.tab3, text="HISTORICAL MACROECONOMIC CYCLE VALIDATOR", bg="#1a1a1a", fg="#ffaa00", font=("Helvetica", 11, "bold")).pack(pady=15)
+        self.econ_text_box = tk.Text(self.tab3, height=7, width=55, bg="#2d2d2d", fg="white", insertbackground="white", bd=0, highlightthickness=1, highlightbackground="#333333")
+        self.econ_text_box.pack(padx=25, pady=5)
+        self.econ_text_box.insert(tk.END, "Central banking systems trigger inflationary expansion through aggressive money printing and monetary stimulus. However, artificial interest rates cause severe market malinvestment and credit expansions, proving that long-term real growth depends on industrial manufacturing productivity, resource trade balancing, and free commodity pricing rules.")
+        self.e_frame = tk.Frame(self.tab3, bg="#1a1a1a")
+        self.e_frame.pack(pady=15)
+        tk.Button(self.e_frame, text="2. RUN MACRO ANALYSIS", command=self.validate_economics, bg="#ffaa00", fg="#1a1a1a", font=("Helvetica", 11, "bold"), bd=0, padx=15, pady=8).pack(side="left", padx=5)
+        self.econ_pdf_btn = tk.Button(self.e_frame, text="3. EXPORT ECONOMIC PDF", command=self.export_economic_pdf, bg="#eab308", fg="#1a1a1a", font=("Helvetica", 11, "bold"), bd=0, padx=15, pady=8, state="disabled")
+        self.econ_pdf_btn.pack(side="left", padx=5)
+
+    def load_data(self):
+        fp = filedialog.askopenfilename(filetypes=[("CSV Files", "*.csv")])
+        if not fp: return
+        try:
+            raw = np.loadtxt(fp, delimiter=",")
+            self.data_x, self.data_y = raw[:, 0], raw[:, 1]
+            self.status_lbl.configure(text=f"Secure Matrix Locked: {os.path.basename(fp)}", fg="#00ff66")
+            self.scan_btn.configure(state="normal")
+        except: messagebox.showerror("Security Rejection", "Data parse check failed.")
+    def validate_data(self):
+        if self.data_x is None: return
+        ss = np.sum((self.data_y - np.mean(self.data_y))**2)
+        _, p_v = shapiro(self.data_y)
+        g_txt = "PASSED" if p_v > 0.05 else "REJECTED"
+        def get_r2(tf, *p): return 1 - (np.sum((self.data_y - tf(self.data_x, *p))**2) / ss)
+        p_lin, _ = curve_fit(linear_theory, self.data_x, self.data_y)
+        r2_lin = get_r2(linear_theory, *p_lin)
+        p_poly, _ = curve_fit(polynomial_theory, self.data_x, self.data_y)
+        r2_poly = get_r2(polynomial_theory, *p_poly)
+        
+        self.math_report_txt = f"Gaussian Curve Evaluation: {g_txt} (p={p_v:.4f})\nLinear Model Precision: R2 = {r2_lin:.4f}\nPolynomial Model Precision: R2 = {r2_poly:.4f}"
+        
+        try:
+            self.cursor.execute("INSERT INTO math_scans (timestamp, summary) VALUES (?, ?)", (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.math_report_txt))
+            self.conn.commit()
+        except: pass
+
+        messagebox.showinfo("Execution Complete", self.math_report_txt)
+        self.math_pdf_btn.configure(state="normal")
+        
+        fig = plt.figure(figsize=(8, 3.2))
+        plt.scatter(self.data_x, self.data_y, color='white', edgecolors='#00ff66')
+        x_s = np.linspace(min(self.data_x), max(self.data_x), 300)
+        if r2_lin > 0: plt.plot(x_s, linear_theory(x_s, *p_lin), color='#00bcff', linestyle='--')
+        if r2_poly > 0: plt.plot(x_s, polynomial_theory(x_s, *p_poly), color='#ffaa00')
+        plt.title("MATHEMATICAL DATA SCIENCE CURVE FIELD OVERLAY", color='#cccccc', pad=15, fontweight="bold")
+        ax = plt.gca(); ax.set_facecolor('#1a1a1a'); fig.patch.set_facecolor('#1a1a1a')
+        ax.spines['bottom'].color = '#333333'; ax.spines['left'].color = '#333333'; ax.tick_params(colors='#cccccc')
+        plt.grid(True, color='#2d2d2d', linestyle=':')
+        plt.savefig("/tmp/math_chart.png", dpi=200, bbox_inches='tight', facecolor=fig.get_facecolor())
+        plt.show()
+
+    def validate_philosophy(self):
+        self.current_statement = self.text_box.get("1.0", tk.END).strip()
+        d = {"Empiricism (Sensory)": ["sensory", "observ", "data", "experi"], "Rationalism (Logic)": ["logic", "reason", "mind", "thought"], "Determinism (Fatalism)": ["predetermine", "caus", "dictat", "fate"], "Existentialism (Agency)": ["choice", "freedom", "free will", "exist"], "Nihilism (Void Matrix)": ["no objective", "intrinsic meaning", "meaningless", "indifferent", "void"], "Stoicism (Resilience)": ["emotional control", "hardship", "calm", "stoic", "endur"]}
+        sc = {k: sum(len(re.findall(rf"{w}", self.current_statement.lower())) for w in v) for k, v in d.items()}
+        tot = sum(sc.values())
+        self.percentages = {k: (v / tot * 100) if total_hits > 0 else 0.0 for k, v in sc.items()} if 'total_hits' in locals() else {k: (v / tot * 100) if tot > 0 else 0.0 for k, v in sc.items()}
+        res = ", ".join(f"{k}: {v:.1f}%" for k, v in self.percentages.items() if v > 0)
+        
+        try:
+            self.cursor.execute("INSERT INTO philosophy_scans (timestamp, text_blob, weights) VALUES (?, ?, ?)", (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.current_statement, res))
+            self.conn.commit()
+        except: pass
+
+        messagebox.showinfo("Semantic Array Verified", res)
+        self.pdf_btn.configure(state="normal")
+        self.compile_chart("/tmp/phil_chart.png", self.percentages, "PHILOSOPHICAL SPECTRUM")
+
+    def validate_economics(self):
+        self.current_econ_statement = self.econ_text_box.get("1.0", tk.END).strip()
+        d = {"Keynesian (Stimulus/Fiat)": ["central", "banking", "printing", "stimulus", "inflation"], "Classical (Production)": ["productivity", "manufacturing", "trade", "commodity", "pricing"], "Austrian School (Business Cycles)": ["interest rates", "malinvestment", "credit", "expansion", "real growth"]}
+        sc = {k: sum(len(re.findall(rf"{w}", self.current_econ_statement.lower())) for w in v) for k, v in d.items()}
+        tot = sum(sc.values())
+        self.econ_percentages = {k: (v / tot * 100) if tot > 0 else 0.0 for k, v in sc.items()}
+        res = ", ".join(f"{k}: {v:.1f}%" for k, v in self.econ_percentages.items() if v > 0)
+        
+        try:
+            self.cursor.execute("INSERT INTO economic_scans (timestamp, text_blob, weights) VALUES (?, ?, ?)", (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.current_econ_statement, res))
+            self.conn.commit()
+        except: pass
+
+        messagebox.showinfo("Historical Core Metric Verified", res)
+        self.econ_pdf_btn.configure(state="normal")
+        self.compile_chart("/tmp/econ_chart.png", self.econ_percentages, "MACROECONOMIC FRAMEWORK PROFILE")
+
+    def compile_chart(self, path, matrix_data, headline):
+        fig = plt.figure(figsize=(8, 3.2))
+        cats = [k for k, v in matrix_data.items() if v > 0]
+        vals = [v for k, v in matrix_data.items() if v > 0]
+        if not cats: cats, vals = ["Neutral Axis Baseline"], [100.0]
+        bars = plt.barh(cats, vals, color=['#8ea4b4', '#a1b5a5', '#bfa7a1', '#d4c5b9'][:len(cats)], edgecolor='none', height=0.45)
+        plt.title(headline, color='#cccccc', pad=15, fontname="Helvetica", fontsize=11, fontweight="bold")
+        ax = plt.gca(); ax.set_facecolor('#1a1a1a'); fig.patch.set_facecolor('#1a1a1a')
+        ax.spines['bottom'].color = '#333333'; ax.spines['left'].color = '#333333'; ax.tick_params(colors='#cccccc'); plt.xlim(0, 100)
+        for b in bars: plt.text(b.get_width() + 2, b.get_y() + b.get_height()/2, f'{b.get_width():.1f}%', va='center', color='#cccccc', fontname="Helvetica", fontsize=9)
+        plt.grid(True, color='#2d2d2d', linestyle=':')
+        plt.savefig(path, dpi=200, bbox_inches='tight', facecolor=fig.get_facecolor())
+        plt.show()
+    def export_math_pdf(self):
+        fp = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF Document", "*.pdf")])
+        if fp: self.build_report(fp, "MATHEMATICAL REGRESSION SCANS MATRIX AUDIT", "I. ANALYSIS METHODOLOGY SUMMARY DETAILS:", self.math_report_txt, "II. GEOMETRIC COORDINATE CURVE FIELD OVERLAY:", "/tmp/math_chart.png", is_txt=True)
+
+    def export_philosophy_pdf(self):
+        fp = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF Document", "*.pdf")])
+        if fp: self.build_report(fp, "PHILOSOPHICAL AXIS METRIC AUDIT REPORT", "I. ANALYZED STATEMENT MATRIX PROPOSITION:", self.current_statement, "II. GRAPHICAL METAPHYSICAL CONFIGURATION SPECTRUM:", "/tmp/phil_chart.png", self.percentages)
+
+    def export_economic_pdf(self):
+        fp = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF Document", "*.pdf")])
+        if fp: self.build_report(fp, "MACROECONOMIC SPECTRUM CONFIGURATION REPORT", "I. HISTORICAL SYSTEMIC ANALYSIS STATEMENTS:", self.current_econ_statement, "II. CALCULATED CYCLICAL ECONOMICS WEIGHT MATRIX:", "/tmp/econ_chart.png", self.econ_percentages)
+
+    def build_report(self, target, heading, s1_hd, s1_body, s2_hd, image_src, metrics=None, is_txt=False):
+        try:
+            doc = SimpleDocTemplate(target, pagesize=letter, leftMargin=36, rightMargin=36, topMargin=36, bottomMargin=36)
+            styles = getSampleStyleSheet()
+            t_style = ParagraphStyle('TS', fontName='Helvetica-Bold', fontSize=15, textColor=colors.HexColor('#3a6073'), spaceAfter=18, alignment=1)
+            time_style = ParagraphStyle('TMS', fontName='Helvetica-Oblique', fontSize=9, textColor=colors.HexColor('#7f8c8d'), spaceAfter=15, alignment=1)
+            h_style = ParagraphStyle('HS', fontName='Helvetica-Bold', fontSize=11, textColor=colors.HexColor('#2c3e50'), spaceBefore=8, spaceAfter=4, leftIndent=90)
+            b_style = ParagraphStyle('BS', fontName='Helvetica', fontSize=9.5, leading=14, textColor=colors.HexColor('#2c3e50'))
+            q_style = ParagraphStyle('QS', fontName='Helvetica-Oblique', fontSize=9.5, leading=14, textColor=colors.HexColor('#5d6d7e'))
+            wc_style = ParagraphStyle('WCS', fontName='Helvetica', fontSize=8, textColor=colors.HexColor('#95a5a6'), alignment=2)
+            
+            story = [Paragraph(heading, t_style), Paragraph(datetime.now().strftime("Generated on %A, %B %d, %Y"), time_style), Paragraph(s1_hd, h_style)]
+            
+            if not is_txt:
+                w_c = len(s1_body.split())
+                qc = [Paragraph(f'\"{s1_body}\"', q_style), Spacer(1, 4), Paragraph(f"Metrics Tracking Summary | Total Word Count: {w_c}", wc_style)]
+                qt = Table([[qc]], colWidths=[540], hAlign='CENTER')
+                qt.setStyle(TableStyle([('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#f8f9fa')), ('PADDING', (0,0), (-1,-1), 12), ('LINELEFT', (0,0), (0,-1), 4, colors.HexColor('#a1b5a5'))]))
+                story.append(qt); story.append(Spacer(1, 6)); story.append(Paragraph("II. CALCULATED INDICES REGISTRATION STATS:", h_style))
+                td = [[Paragraph("<b>Analyzed Paradigm Metric Matrix</b>", b_style), Paragraph("<b>Affinity Weight</b>", b_style)]]
+                for k, v in metrics.items():
+                    if v > 0: td.append([Paragraph(k, b_style), Paragraph(f"{v:.1f}%", b_style)])
+                gt = Table(td, colWidths=[270, 270], hAlign='CENTER')
+                gt.setStyle(TableStyle([('BACKGROUND', (0,0), (1,0), colors.HexColor('#f2f4f4')), ('PADDING', (0,0), (-1,-1), 6), ('LINEBELOW', (0,0), (-1,-1), 0.5, colors.HexColor('#e5e7e9')), ('ALIGN', (1,0), (1,-1), 'RIGHT')]))
+                story.append(gt); story.append(Spacer(1, 6))
+            else:
+                m_rows = [[Paragraph(line, b_style)] for line in s1_body.split('\n') if line.strip()]
+                mt = Table(m_rows, colWidths=[540], hAlign='CENTER')
+                mt.setStyle(TableStyle([('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#fcfcfc')), ('PADDING', (0,0), (-1,-1), 6), ('LINEBELOW', (0,0), (-1,-1), 0.5, colors.HexColor('#f2f2f2'))]))
+                story.append(mt); story.append(Spacer(1, 6))
+
+            story.append(Paragraph(s2_hd, h_style))
+            if os.path.exists(image_src):
+                story.append(Table([[Image(image_src, width=360, height=144)]], colWidths=[540], hAlign='CENTER'))
+            doc.build(story)
+            messagebox.showinfo("Success", "Single-Page Core PDF Audit Report generated successfully!")
+        except Exception as e: messagebox.showerror("Render Exception", str(e))
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = HardenedValidatorApp(root)
+    root.mainloop()
