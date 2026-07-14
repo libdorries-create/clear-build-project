@@ -268,6 +268,10 @@ class HardenedValidatorApp:
         fp = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF Files", "*.pdf")])
         if not fp: return
         try:
+            from reportlab.graphics.shapes import Drawing
+            from reportlab.graphics.charts.barcharts import HorizontalBarChart
+            from reportlab.lib import colors
+            
             doc = SimpleDocTemplate(fp, pagesize=letter)
             story = [
                 Paragraph("Quantum Philosophical Proposition Ledger", getSampleStyleSheet()['Title']),
@@ -275,61 +279,32 @@ class HardenedValidatorApp:
                 Paragraph(f"<b>Analyzed Structural Matrix Sequence:</b><br/>{self.current_statement}", getSampleStyleSheet()['BodyText']),
                 Spacer(1, 25)
             ]
-            doc.build(story)
-            if os.path.exists("temp_phil_chart.png"): os.remove("temp_phil_chart.png")
-            messagebox.showinfo("Export Successful", "Philosophy report chart printed to PDF.")
-        except Exception as e: messagebox.showerror("PDF Render Failure", str(e))
-
-    def export_economic_pdf(self):
-        fp = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF Files", "*.pdf")])
-        if not fp: return
-        try:
-            from reportlab.graphics.shapes import Drawing
-            from reportlab.graphics.charts.piecharts import Pie
-            from reportlab.graphics.charts.legends import Legend
-            from reportlab.lib import colors
             
-            doc = SimpleDocTemplate(fp, pagesize=letter)
-            story = [
-                Paragraph("Macroeconomic Cycle Fit Assessment", getSampleStyleSheet()['Title']),
-                Spacer(1, 15),
-                Paragraph(f"<b>Source Parameters Scanned:</b><br/>{self.current_econ_statement}", getSampleStyleSheet()['BodyText']),
-                Spacer(1, 25)
-            ]
+            d = Drawing(450, 200)
+            chart = HorizontalBarChart()
+            chart.x = 90
+            chart.y = 20
+            chart.height = 160
+            chart.width = 320
             
-            d = Drawing(400, 200)
-            pc = Pie()
-            pc.x = 20
-            pc.y = 20
-            pc.width = 160
-            pc.height = 160
-            pc.data = list(self.econ_percentages.values())
-            pc.labels = [f"{v}%" for v in self.econ_percentages.values()]
-            pc.slices.strokeWidth = 0.5
+            chart.data = [list(self.percentages.values())]
+            chart.categoryAxis.categoryNames = list(self.percentages.keys())
             
-            # Map dynamic vector color styles to match chosen theme profiles
+            chart.categoryAxis.labels.fontSize = 9
+            chart.categoryAxis.labels.fontName = 'Helvetica'
+            chart.valueAxis.valueMin = 0
+            chart.valueAxis.valueMax = 100
+            chart.valueAxis.valueStep = 20
+            chart.valueAxis.labels.fontSize = 8
+            
             theme = self.theme_choice.get()
-            c_list = [colors.HexColor('#00ff66'), colors.HexColor('#00bcff'), colors.HexColor('#a855f7')] if theme == "Matrix Dark (Default)" else ([colors.HexColor('#f43f5e'), colors.HexColor('#38bdf8'), colors.HexColor('#eab308')] if theme == "Cyberpunk Neon" else [colors.HexColor('#475569'), colors.HexColor('#94a3b8'), colors.HexColor('#cbd5e1')])
-            for i, color in enumerate(c_list):
-                pc.slices[i].fillColor = color
-                
-            # Build an explicit layout chart key ledger legend
-            leg = Legend()
-            leg.x = 220
-            leg.y = 150
-            leg.dx = 8
-            leg.dy = 8
-            leg.fontName = 'Helvetica'
-            leg.fontSize = 9
-            leg.boxAnchor = 'nw'
-            leg.columnMaximum = 3
-            leg.colorNamePairs = [(c_list[i], list(self.econ_percentages.keys())[i]) for i in range(len(c_list))]
+            bar_hex = '#00ff66' if theme == "Matrix Dark (Default)" else ('#f43f5e' if theme == "Cyberpunk Neon" else '#475569')
+            chart.bars.fillColor = colors.HexColor(bar_hex)
             
-            d.add(pc)
-            d.add(leg)
+            d.add(chart)
             story.append(d)
             doc.build(story)
-            messagebox.showinfo("Export Successful", "Crisp vector-drawn Macroeconomic analysis report printed to PDF.")
+            messagebox.showinfo("Export Successful", "Crisp vector-drawn Philosophical ledger successfully printed to PDF.")
         except Exception as e: messagebox.showerror("Vector Render Failure", str(e))
 
     def setup_history_tab(self):
