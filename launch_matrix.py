@@ -278,15 +278,24 @@ class HardenedValidatorApp:
             from reportlab.graphics.charts.barcharts import HorizontalBarChart
             from reportlab.lib import colors
             
-            # Establish dynamic contrast color profiles based on active interface choices
+            # Math-calibrated accessibility contrast ratios for pristine typography legibility
             theme = self.theme_choice.get()
-            text_hex = '#ffffff' if theme in ["Matrix Dark (Default)", "Cyberpunk Neon", "Classic Slate"] else '#1e293b'
-            title_hex = '#00ff66' if theme == "Matrix Dark (Default)" else ('#38bdf8' if theme == "Cyberpunk Neon" else '#cbd5e1')
-            
-            # Re-generate custom high-contrast typography style structures
+            if theme == "Matrix Dark (Default)":
+                bg_hex, text_hex, title_hex = '#1a1a1a', '#00ff66', '#00ff66'
+            elif theme == "Cyberpunk Neon":
+                bg_hex, text_hex, title_hex = '#0f172a', '#ffffff', '#38bdf8'
+            else: # Classic Slate (Calibrated Light Canvas Matrix)
+                bg_hex, text_hex, title_hex = '#cbd5e1', '#1e293b', '#0f172a'
+                
             custom_styles = getSampleStyleSheet()
             title_style = ParagraphStyle('CustomTitle', parent=custom_styles['Title'], textColor=colors.HexColor(title_hex))
             body_style = ParagraphStyle('CustomBody', parent=custom_styles['BodyText'], textColor=colors.HexColor(text_hex), leading=14)
+
+            def draw_background(canvas, doc_obj):
+                canvas.saveState()
+                canvas.setFillColor(colors.HexColor(bg_hex))
+                canvas.rect(0, 0, letter, letter, fill=True, stroke=False)
+                canvas.restoreState()
 
             doc = SimpleDocTemplate(fp, pagesize=letter)
             story = [
@@ -347,12 +356,22 @@ class HardenedValidatorApp:
             from reportlab.lib import colors
             
             theme = self.theme_choice.get()
-            text_hex = '#ffffff' if theme in ["Matrix Dark (Default)", "Cyberpunk Neon", "Classic Slate"] else '#1e293b'
-            title_hex = '#00ff66' if theme == "Matrix Dark (Default)" else ('#eab308' if theme == "Cyberpunk Neon" else '#cbd5e1')
-            
+            if theme == "Matrix Dark (Default)":
+                bg_hex, text_hex, title_hex = '#1a1a1a', '#00ff66', '#00ff66'
+            elif theme == "Cyberpunk Neon":
+                bg_hex, text_hex, title_hex = '#0f172a', '#ffffff', '#eab308'
+            else: # Classic Slate Calibrated Profile
+                bg_hex, text_hex, title_hex = '#cbd5e1', '#1e293b', '#0f172a'
+                
             custom_styles_econ = getSampleStyleSheet()
             title_style_econ = ParagraphStyle('CustomTitleEcon', parent=custom_styles_econ['Title'], textColor=colors.HexColor(title_hex))
             body_style_econ = ParagraphStyle('CustomBodyEcon', parent=custom_styles_econ['BodyText'], textColor=colors.HexColor(text_hex), leading=14)
+
+            def draw_background_econ(canvas, doc_obj):
+                canvas.saveState()
+                canvas.setFillColor(colors.HexColor(bg_hex))
+                canvas.rect(0, 0, letter, letter, fill=True, stroke=False)
+                canvas.restoreState()
 
             doc = SimpleDocTemplate(fp, pagesize=letter)
             story = [
