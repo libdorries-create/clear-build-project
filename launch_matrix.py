@@ -300,9 +300,16 @@ class HardenedValidatorApp:
             chart.valueAxis.valueStep = 20
             chart.valueAxis.labels.fontSize = 8
             
+            # Live production framework to sync layout colors to the active UI palette dropdown
             theme = self.theme_choice.get()
-            bar_hex = '#00ff66' if theme == "Matrix Dark (Default)" else ('#f43f5e' if theme == "Cyberpunk Neon" else '#475569')
-            chart.bars.fillColor = colors.HexColor(bar_hex)
+            if theme == "Matrix Dark (Default)":
+                bar_color = colors.HexColor('#00ff66')
+            elif theme == "Cyberpunk Neon":
+                bar_color = colors.HexColor('#f43f5e')
+            else:
+                bar_color = colors.HexColor('#475569')
+                
+            chart.bars.fillColor = bar_color
             
             d.add(chart)
             story.append(d)
@@ -337,9 +344,17 @@ class HardenedValidatorApp:
             pc.labels = [f"{v}%" for v in self.econ_percentages.values()]
             pc.slices.strokeWidth = 0.5
             
+            # Dynamic theme alignment filter mapping loops
             theme = self.theme_choice.get()
-            c_list = [colors.HexColor('#00ff66'), colors.HexColor('#00bcff'), colors.HexColor('#a855f7')] if theme == "Matrix Dark (Default)" else ([colors.HexColor('#f43f5e'), colors.HexColor('#38bdf8'), colors.HexColor('#eab308')] if theme == "Cyberpunk Neon" else [colors.HexColor('#475569'), colors.HexColor('#94a3b8'), colors.HexColor('#cbd5e1')])
-            for i, color in enumerate(c_list): pc.slices[i].fillColor = color
+            if theme == "Matrix Dark (Default)":
+                c_list = [colors.HexColor('#00ff66'), colors.HexColor('#00bcff'), colors.HexColor('#a855f7')]
+            elif theme == "Cyberpunk Neon":
+                c_list = [colors.HexColor('#f43f5e'), colors.HexColor('#38bdf8'), colors.HexColor('#eab308')]
+            else:
+                c_list = [colors.HexColor('#475569'), colors.HexColor('#94a3b8'), colors.HexColor('#cbd5e1')]
+                
+            for i, color in enumerate(c_list):
+                pc.slices[i].fillColor = color
                 
             leg = Legend()
             leg.x = 220
