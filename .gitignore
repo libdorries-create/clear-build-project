@@ -1,0 +1,5 @@
+.DS_Store
+*.save
+*.db
+__pycache__/
+*.pdf
