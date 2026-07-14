@@ -211,6 +211,10 @@ class HardenedValidatorApp:
         self.history_txt.pack(padx=20, pady=5)
         tk.Button(self.tab5, text="🔄 REFRESH LEDGER STATISTICS", command=self.refresh_history_ledger, bg="#00bcff", fg="#1a1a1a", font=("Helvetica", 10, "bold"), bd=0, padx=12, pady=6).pack(pady=15)
         
+        # --- LIVE SYSTEM SYNC CONFIRMATION BANNER ---
+        self.sync_confirm_lbl = tk.Label(self.tab5, text="Awaiting Database Sync Query...", bg="#1a1a1a", fg="#888888", font=("Helvetica", 9, "italic"))
+        self.sync_confirm_lbl.pack(pady=2)
+        
         # --- SECURE DATABASE LEAD PURGE WIPER CONTROLS ---
         tk.Button(self.tab5, text="💥 PURGE ALL DATABASE SCANS", command=self.purge_database_records, bg="#f43f5e", fg="white", font=("Helvetica", 10, "bold"), bd=0, padx=12, pady=6).pack(pady=5)
         self.refresh_history_ledger()
@@ -235,8 +239,11 @@ class HardenedValidatorApp:
             self.history_txt.insert(tk.END, "\n>> LATEST HISTORICAL CYCLE MODEL FIT WEIGHTS:\n")
             if not econ_rows: self.history_txt.insert(tk.END, " [No transaction entries archived yet.]\n")
             for r in econ_rows: self.history_txt.insert(tk.END, f" * [{r[0]}] {r[1]}\n")
+            # Fluidly update the success tracker parameters upon zero connection dropouts
+            self.sync_confirm_lbl.configure(text=f"✅ LEDGER REFRESH SUCCESSFUL | SYNC TIME: {datetime.now().strftime('%H:%M:%S')}", fg="#00ff66")
         except Exception as e:
             self.history_txt.insert(tk.END, f"\n⚠️ Ledger Database Connection Interrupt: {str(e)}")
+            self.sync_confirm_lbl.configure(text="❌ DATABASE SYNC ERROR / INTERRUPT", fg="#f43f5e")
         self.history_txt.configure(state="disabled")
 
     def load_data(self):
