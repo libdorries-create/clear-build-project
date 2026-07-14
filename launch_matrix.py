@@ -280,8 +280,8 @@ class HardenedValidatorApp:
             
             # Establish dynamic contrast color profiles based on active interface choices
             theme = self.theme_choice.get()
-            text_hex = '#ffffff' if theme in ["Matrix Dark (Default)", "Cyberpunk Neon"] else '#1e293b'
-            title_hex = '#00ff66' if theme == "Matrix Dark (Default)" else ('#38bdf8' if theme == "Cyberpunk Neon" else '#0f172a')
+            text_hex = '#ffffff' if theme in ["Matrix Dark (Default)", "Cyberpunk Neon", "Classic Slate"] else '#1e293b'
+            title_hex = '#00ff66' if theme == "Matrix Dark (Default)" else ('#38bdf8' if theme == "Cyberpunk Neon" else '#cbd5e1')
             
             # Re-generate custom high-contrast typography style structures
             custom_styles = getSampleStyleSheet()
@@ -347,8 +347,8 @@ class HardenedValidatorApp:
             from reportlab.lib import colors
             
             theme = self.theme_choice.get()
-            text_hex = '#ffffff' if theme in ["Matrix Dark (Default)", "Cyberpunk Neon"] else '#1e293b'
-            title_hex = '#00ff66' if theme == "Matrix Dark (Default)" else ('#eab308' if theme == "Cyberpunk Neon" else '#0f172a')
+            text_hex = '#ffffff' if theme in ["Matrix Dark (Default)", "Cyberpunk Neon", "Classic Slate"] else '#1e293b'
+            title_hex = '#00ff66' if theme == "Matrix Dark (Default)" else ('#eab308' if theme == "Cyberpunk Neon" else '#cbd5e1')
             
             custom_styles_econ = getSampleStyleSheet()
             title_style_econ = ParagraphStyle('CustomTitleEcon', parent=custom_styles_econ['Title'], textColor=colors.HexColor(title_hex))
