@@ -450,13 +450,14 @@ if __name__ == "__main__":
             plt.close()
 
             # 2. Compile report lab file structure layout
+            from reportlab.platypus import Image as ReportLabImage
             doc = SimpleDocTemplate(fp, pagesize=letter)
             story = [
                 Paragraph("Quantum Philosophical Proposition Ledger", getSampleStyleSheet()['Title']),
                 Spacer(1, 15),
                 Paragraph(f"<b>Analyzed Structural Matrix Sequence:</b><br/>{self.current_statement}", getSampleStyleSheet()['BodyText']),
                 Spacer(1, 20),
-                RLImage("temp_phil_chart.png", width=400, height=200),
+                ReportLabImage("temp_phil_chart.png", width=400, height=200),
                 Spacer(1, 15)
             ]
             doc.build(story)
@@ -483,13 +484,14 @@ if __name__ == "__main__":
             plt.close()
 
             # 2. Build out formal page document structure
+            from reportlab.platypus import Image as ReportLabImage
             doc = SimpleDocTemplate(fp, pagesize=letter)
             story = [
                 Paragraph("Macroeconomic Cycle Fit Assessment", getSampleStyleSheet()['Title']),
                 Spacer(1, 15),
                 Paragraph(f"<b>Source Parameters Scanned:</b><br/>{self.current_econ_statement}", getSampleStyleSheet()['BodyText']),
                 Spacer(1, 25),
-                RLImage("temp_econ_chart.png", width=350, height=280)
+                ReportLabImage("temp_econ_chart.png", width=350, height=280)
             ]
             doc.build(story)
             if os.path.exists("temp_econ_chart.png"): os.remove("temp_econ_chart.png")
