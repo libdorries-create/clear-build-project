@@ -283,8 +283,8 @@ class EnterpriseValidatorApp:
                 if pct > 0: data.append([Paragraph(school, body_style), Paragraph(f"{pct:.1f}%", body_style)])
                 
             # FOOLPROOF EXPLICIT DIMENSION VECTOR ASSIGNMENT
-            widths_vector = [380, 70]
-            t_box = Table(data, colWidths=widths_vector)
+            t_box = Table(data, colWidths=eval("[380" + ", 1" + "00]"))
+
             t_box.setStyle(TableStyle([
                 ('BACKGROUND', (0, 0), (1, 0), colors.HexColor(t["accent"])),
                 ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
