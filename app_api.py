@@ -9,16 +9,36 @@ from scipy.stats import shapiro
 import re, os, csv
 from datetime import datetime
 
+# ReportLab Engine Layout Tools
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib import colors
+
 def linear_theory(x, m, c): return m * x + c
 def polynomial_theory(x, a, b, c): return a * (x**2) + b * x + c
 
 class EnterpriseValidatorApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Universal Matrix Platform - Master Ledger Edition")
-        self.root.geometry("620x720")
+        self.root.title("Universal Matrix Platform - Adaptive Canvas Edition")
+        self.root.geometry("620x680")
         
-        # --- UI DESIGN PALETTES MATRIX ---
+        # --- SECURED BACKGROUND DICTIONARY CORE ---
+        self.dictionary = {
+            "Empiricism (Sensory)": ["sensory", "observ", "data", "experi", "evidence"],
+            "Rationalism (Logic)": ["logic", "reason", "mind", "thought", "intellect"],
+            "Determinism (Fatalism)": ["predetermine", "caus", "dictat", "fate", "inevitable"],
+            "Existentialism (Agency)": ["choice", "freedom", "free will", "exist", "create purpose"],
+            "Nihilism (Void Matrix)": ["no objective", "intrinsic meaning", "meaningless", "indifferent", "void", "nothingness"],
+            "Stoicism (Resilience)": ["emotional control", "hardship", "calm", "stoic", "endur", "fortitude"],
+            "Utilitarianism (Consequence)": ["utility", "greatest good", "consequence", "maximize happiness", "welfare"],
+            "Deontology (Duty Matrix)": ["duty", "obligation", "rule", "categorical imperative", "absolute law"],
+            "Absurdism (Defiance)": ["absurd", "rebellion", "meaningless conflict", "sisyphus", "embrace the chaos"],
+            "Virtue Ethics (Character)": ["virtue", "character", "moral excellence", "flourish", "wisdom", "temperance"]
+        }
+        
+        # --- UI & REPORT MATCHING THEMES DATABASE ---
         self.themes = {
             "Cyberpunk Matrix": {"bg": "#121212", "card": "#1e1e1e", "text": "#ffffff", "accent": "#00ff66", "secondary": "#00bcff"},
             "High-Contrast Slate": {"bg": "#1a202c", "card": "#2d3748", "text": "#f7fafc", "accent": "#edf2f7", "secondary": "#63b3ed"},
@@ -27,8 +47,7 @@ class EnterpriseValidatorApp:
         }
         self.current_theme = "Cyberpunk Matrix"
         self.percentages, self.current_statement, self.data_x, self.data_y = {}, "", None, None
-        
-        # Main Layout Tabs
+        # Main Tab Scaffold
         self.notebook = ttk.Notebook(root)
         self.notebook.pack(fill="both", expand=True, padx=15, pady=15)
         self.tab1 = tk.Frame(self.notebook)
@@ -40,6 +59,7 @@ class EnterpriseValidatorApp:
         self.setup_text_matrix()
         self.setup_theme_selector()
         self.apply_theme_profile()
+
     def setup_theme_selector(self):
         self.theme_frame = tk.Frame(self.root)
         self.theme_frame.pack(fill="x", side="bottom", padx=15, pady=5)
@@ -111,7 +131,7 @@ class EnterpriseValidatorApp:
             ent.pack(side="right", expand=True, fill="x")
             ent.insert(0, default_val)
             self.entries[label_text] = ent
-        self.report_btn = tk.Button(self.report_frame, text="📄 COMPILE MASTER DISCOVERY REPORT", command=self.compile_local_report, state="disabled")
+        self.report_btn = tk.Button(self.report_frame, text="📄 COMPILE MASTER DISCOVERY PDF", command=self.compile_local_report, state="disabled")
         self.report_btn.pack(pady=10)
     def browse_csv(self):
         file_path = filedialog.askopenfilename(filetypes=[("CSV Files", "*.csv")])
@@ -141,21 +161,9 @@ class EnterpriseValidatorApp:
     def compute_text(self):
         self.current_statement = self.text_box.get("1.0", tk.END).strip()
         proposition = self.current_statement.lower()
-        dictionary = {
-            "Empiricism (Sensory)": ["sensory", "observ", "data", "experi", "evidence"],
-            "Rationalism (Logic)": ["logic", "reason", "mind", "thought", "intellect"],
-            "Determinism (Fatalism)": ["predetermine", "caus", "dictat", "fate", "inevitable"],
-            "Existentialism (Agency)": ["choice", "freedom", "free will", "exist", "create purpose"],
-            "Nihilism (Void Matrix)": ["no objective", "intrinsic meaning", "meaningless", "indifferent", "void", "nothingness"],
-            "Stoicism (Resilience)": ["emotional control", "hardship", "calm", "stoic", "endur", "fortitude"],
-            "Utilitarianism (Consequence)": ["utility", "greatest good", "consequence", "maximize happiness", "welfare"],
-            "Deontology (Duty Matrix)": ["duty", "obligation", "rule", "categorical imperative", "absolute law"],
-            "Absurdism (Defiance)": ["absurd", "rebellion", "meaningless conflict", "sisyphus", "embrace the chaos"],
-            "Virtue Ethics (Character)": ["virtue", "character", "moral excellence", "flourish", "wisdom", "temperance"]
-        }
         scores = {}
         total_hits = 0
-        for school, keywords in dictionary.items():
+        for school, keywords in self.dictionary.items():
             count = sum(len(re.findall(rf"{word}", proposition)) for word in keywords)
             scores[school] = count
             total_hits += count
@@ -179,9 +187,9 @@ class EnterpriseValidatorApp:
         with open(csv_file, "a", newline="") as f:
             writer = csv.writer(f)
             if not file_exists:
-                writer.writerow(["Timestamp", "Evaluated Proposition"] + list(dictionary.keys()))
+                writer.writerow(["Timestamp", "Evaluated Proposition"] + list(self.dictionary.keys()))
             row_data = [timestamp, self.current_statement]
-            for school in dictionary.keys():
+            for school in self.dictionary.keys():
                 row_data.append(f"{self.percentages.get(school, 0.0):.1f}%")
             writer.writerow(row_data)
 
@@ -189,19 +197,84 @@ class EnterpriseValidatorApp:
         doc_title = self.entries["Custom Document Title:"].get().strip()
         auditor = self.entries["Target Auditor Initials:"].get().strip()
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        filename = f"Matrix_Report_{timestamp}.txt"
+        
+        pdf_filename = f"Matrix_Report_{timestamp}.pdf"
+        chart_filename = f"temp_chart_{timestamp}.png"
+        
+        # Pull active visual theme profile attributes dynamically
+        t = self.themes[self.current_theme]
+        
+        categories = [k for k, v in self.percentages.items() if v > 0]
+        values = [v for k, v in self.percentages.items() if v > 0]
+        if not categories: categories, values = ["Unclassified Spectrum"], [100.0]
+        
+        # Formulate chart using exact active palette profiles
+        fig, ax = plt.subplots(figsize=(6, 2.2))
+        bars = ax.barh(categories, values, color=t["secondary"], height=0.45)
+        ax.set_xlim(0, 100)
+        ax.set_title("EPISTEMOLOGICAL CONFIGURATION MATRIX SCORES", fontsize=9, fontweight="bold", color=t["text"])
+        ax.set_facecolor(t["bg"]); fig.patch.set_facecolor(t["bg"])
+        ax.spines['bottom'].color = t["text"]; ax.spines['left'].color = t["text"]
+        ax.tick_params(colors=t["text"])
+        
+        for bar in bars:
+            ax.text(bar.get_width() + 1, bar.get_y() + bar.get_height()/2, f'{bar.get_width():.1f}%', va='center', fontsize=8, fontweight='bold', color=t["text"])
+        plt.tight_layout()
+        plt.savefig(chart_filename, dpi=200)
+        plt.close()
+        
         try:
-            with open(filename, "w") as f:
-                f.write("="*60 + "\n" + f"  {doc_title.upper()}\n" + "="*60 + "\n")
-                f.write(f"Generated On : {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-                f.write(f"Compiled By  : Auditor [{auditor}]\n" + "-"*60 + "\n\n")
-                f.write(f"EVALUATED PROPOSITION TARGET CONTEXT:\n\"{self.current_statement}\"\n\n")
-                f.write("COMPUTED METRIC PROFILE ANALYSIS:\n")
-                for school, pct in self.percentages.items():
-                    if pct > 0: f.write(f"  * {school:<30} : {pct:.1f}%\n")
-                f.write("\n" + "="*60 + "\n  STATUS: SYNCHRONIZED TO Master LEDGER\n" + "="*60 + "\n")
-            messagebox.showinfo("Report Compiled", f"Success! Master discovery file safely generated:\n\n'{filename}'")
-        except Exception as e: messagebox.showerror("Export Fault", str(e))
+            # Build PDF mirroring active canvas background colours
+            doc = SimpleDocTemplate(pdf_filename, pagesize=letter)
+            styles = getSampleStyleSheet()
+            
+            title_style = ParagraphStyle('TStyle', parent=styles['Heading1'], fontSize=18, textColor=colors.HexColor(t["secondary"]), spaceAfter=12)
+            body_style = ParagraphStyle('BStyle', parent=styles['Normal'], fontSize=10, textColor=colors.HexColor(t["text"]), leading=14)
+            label_style = ParagraphStyle('LStyle', parent=styles['Normal'], fontSize=10, textColor=colors.HexColor(t["bg"]), fontName="Helvetica-Bold")
+            
+            story = [
+                Paragraph(doc_title.upper(), title_style),
+                Spacer(1, 8),
+                Paragraph(f"<b>Generation Timestamp:</b> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", body_style),
+                Paragraph(f"<b>Compiled By:</b> Auditor ID [{auditor}]", body_style),
+                Paragraph(f"<b>Visual Contrast Profile Sync:</b> Enforced [{self.current_theme}]", body_style),
+                Spacer(1, 10),
+                Paragraph(f"<b>Evaluated Target Context:</b><br/><i>\"{self.current_statement}\"</i>", body_style),
+                Spacer(1, 15)
+            ]
+            
+            data = [[Paragraph("Philosophical Framework Classification Profile", label_style), Paragraph("Match", label_style)]]
+            for school, pct in self.percentages.items():
+                if pct > 0:
+                    data.append([Paragraph(school, body_style), Paragraph(f"{pct:.1f}%", body_style)])
+                
+            t_box = Table(data, colWidths=)
+            t_box.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (1, 0), colors.HexColor(t["accent"])),
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 6),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor(t["card"])),
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor(t["secondary"])),
+                ('PADDING', (0, 1), (-1, -1), 5)
+            ]))
+            story.append(t_box)
+            story.append(Spacer(1, 15))
+            story.append(Paragraph("<b>Visual Configuration Analysis Overlay:</b>", body_style))
+            story.append(Spacer(1, 5))
+            story.append(Image(chart_filename, width=400, height=146))
+            
+            # Draw adaptive overall background color page canvas profile
+            def draw_background(canvas, document):
+                canvas.saveState()
+                canvas.setFillColor(colors.HexColor(t["bg"]))
+                canvas.rect(0, 0, document.pagesize[0], document.pagesize[1], fill=True, stroke=False)
+                canvas.restoreState()
+                
+            doc.build(story, onFirstPage=draw_background)
+            if os.path.exists(chart_filename): os.remove(chart_filename)
+            messagebox.showinfo("Adaptive PDF Compiled", f"Success! Contrast-aligned master report generated:\n\n'{pdf_filename}'")
+        except Exception as e:
+            messagebox.showerror("PDF Compilation Error", str(e))
 
 if __name__ == "__main__":
     root = tk.Tk()
