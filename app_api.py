@@ -28,6 +28,7 @@ def initialise_database():
             timestamp TEXT,
             proposition TEXT,
             dominant_classification TEXT,
+            risk_statement TEXT,
             empiricism TEXT, rationalism TEXT, determinism TEXT, existentialism TEXT,
             nihilism TEXT, stoicism TEXT, utilitarianism TEXT, deontology TEXT,
             absurdism TEXT, virtue_ethics TEXT, risk_assessment TEXT, legal_political TEXT
@@ -41,10 +42,10 @@ initialise_database()
 class EnterpriseValidatorApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Universal Matrix Platform - Risk Analytics Edition")
-        self.root.geometry("640x720")
+        self.root.title("Universal Matrix Platform - Threat Assessment Edition")
+        self.root.geometry("640x740")
         
-        # --- EXPANDED 12-CATEGORY SEMANTIC BACKGROUND DICTIONARY CORE ---
+        # --- 12-CATEGORY SEMANTIC BACKGROUND DICTIONARY ---
         self.dictionary = {
             "Empiricism (Sensory)": ["empirical data", "sensory observation", "scientific evidence", "measurable observation", "verifiable data"],
             "Rationalism (Logic)": ["pure reason", "logical deduction", "intellect concept", "mental construct", "rational mind"],
@@ -54,13 +55,12 @@ class EnterpriseValidatorApp:
             "Stoicism (Resilience)": ["emotional control", "hardship", "calm", "stoic", "endur", "fortitude", "unshakeable calm", "enduring hardship", "mental fortitude", "stoic resilience"],
             "Utilitarianism (Consequence)": ["utility", "greatest good", "consequence", "maximize happiness", "welfare", "maximize utility", "maximize happiness", "collective welfare", "consequential outcome"],
             "Deontology (Duty Matrix)": ["duty", "obligation", "rule", "categorical imperative", "absolute law", "absolute moral duty", "rule of law", "binding obligation", "unconditional command"],
-            "Absurdism (Defiance)": ["absurd", "rebellion", "meaningless conflict", "sisyphus", "embrace the chaos", "absurd nature", "sisyphean defiance", "rebellion against the void"],
+            "Absurdism (Defiance)": ["absurd", "rebellion", "meaningless conflict", "sisyphus", "embrace the chaos", "absurd nature", "sisypehean defiance", "rebellion against the void"],
             "Virtue Ethics (Character)": ["virtue", "character", "moral excellence", "flourish", "wisdom", "temperance", "human flourishing", "virtuous character", "practical wisdom", "temperance and justice"],
-            "Risk Assessment Profile": ["mitigation protocol", "systemic liability", "severity matrix", "vulnerability index", "threat Vector", "risk exposure"],
+            "Risk Assessment Profile": ["mitigation protocol", "systemic liability", "severity matrix", "vulnerability index", "threat vector", "risk exposure"],
             "Legal-Political Framework": ["sovereign policy", "regulatory non-compliance", "jurisdictional mandate", "geopolitical instability", "legislative oversight"]
         }
         
-        # UI Themes Database Configuration
         self.themes = {
             "Cyberpunk Matrix": {"bg": "#121212", "card": "#1e1e1e", "text": "#ffffff", "accent": "#00ff66", "secondary": "#00bcff"},
             "High-Contrast Slate": {"bg": "#1a202c", "card": "#2d3748", "text": "#f7fafc", "accent": "#edf2f7", "secondary": "#63b3ed"},
@@ -69,8 +69,8 @@ class EnterpriseValidatorApp:
         }
         self.current_theme = "Cyberpunk Matrix"
         self.percentages, self.current_statement, self.data_x, self.data_y = {}, "", None, None
+        self.generated_risk_statement = "STABLE GATEWAY: No elevated threat signatures detected."
 
-        # Main Tab Scaffold
         self.notebook = ttk.Notebook(root)
         self.notebook.pack(fill="both", expand=True, padx=15, pady=15)
         self.tab1 = tk.Frame(self.notebook)
@@ -163,21 +163,22 @@ class EnterpriseValidatorApp:
         self.report_btn.pack(pady=10)
 
     def setup_history_browser(self):
-        self.hist_title = tk.Label(self.tab3, text="VAULT SYSTEM TRANSACATION LEDGER LOGS", font=("Helvetica", 12, "bold"))
+        self.hist_title = tk.Label(self.tab3, text="VAULT SYSTEM TRANSACTION LEDGER LOGS", font=("Helvetica", 12, "bold"))
         self.hist_title.pack(pady=15)
-        
         self.grid_frame = tk.Frame(self.tab3)
         self.grid_frame.pack(fill="both", expand=True, padx=25, pady=5)
         
-        columns = ("id", "timestamp", "classification")
+        columns = ("id", "timestamp", "classification", "risk")
         self.tree = ttk.Treeview(self.grid_frame, columns=columns, show="headings", height=14)
-        self.tree.heading("id", text="Transaction ID")
-        self.tree.heading("timestamp", text="Timestamp Record")
+        self.tree.heading("id", text="ID")
+        self.tree.heading("timestamp", text="Timestamp")
         self.tree.heading("classification", text="Dominant Category")
+        self.tree.heading("risk", text="Assessed Risk Level")
         
-        self.tree.column("id", width=100, anchor="center")
-        self.tree.column("timestamp", width=180, anchor="center")
-        self.tree.column("classification", width=220, anchor="w")
+        self.tree.column("id", width=60, anchor="center")
+        self.tree.column("timestamp", width=140, anchor="center")
+        self.tree.column("classification", width=180, anchor="w")
+        self.tree.column("risk", width=180, anchor="center")
         
         self.scrollbar = ttk.Scrollbar(self.grid_frame, orient="vertical", command=self.tree.yview)
         self.tree.configure(yscrollcommand=self.scrollbar.set)
@@ -191,10 +192,9 @@ class EnterpriseValidatorApp:
         try:
             conn = sqlite3.connect("matrix_permanent_vault.db")
             cursor = conn.cursor()
-            cursor.execute("SELECT id, timestamp, dominant_classification FROM evaluation_history ORDER BY id DESC")
+            cursor.execute("SELECT id, timestamp, dominant_classification, risk_statement FROM evaluation_history ORDER BY id DESC")
             records = cursor.fetchall()
-            for record in records:
-                self.tree.insert("", tk.END, values=record)
+            for record in records: self.tree.insert("", tk.END, values=record)
             conn.close()
         except Exception as e: messagebox.showerror("Vault Read Error", str(e))
 
@@ -236,7 +236,20 @@ class EnterpriseValidatorApp:
             
         self.percentages = {k: (v / total_hits * 100) if total_hits > 0 else 0.0 for k, v in scores.items()}
         
-        report = "--- SPECTRUM SCORES ---\n\n"
+        # --- THREAT SEVERITY ASSESSMENT COMPOTATION LOGIC ---
+        risk_pct = self.percentages.get("Risk Assessment Profile", 0.0)
+        legal_pct = self.percentages.get("Legal-Political Framework", 0.0)
+        combined_threat = risk_pct + legal_pct
+        
+        if combined_threat >= 40.0:
+            self.generated_risk_statement = "CRITICAL EXPOSURE: Systemic liability and operational safety protocols breached."
+        elif combined_threat >= 15.0:
+            self.generated_risk_statement = "HIGH RISK: Regulatory non-compliance vectors identified. Audit recommended."
+        else:
+            self.generated_risk_statement = "STABLE GATEWAY: Standard framework limits maintained. Low threat profile."
+            
+        report = f"--- AUTOMATED RISK & SPECTRUM SUMMARY ---\n\n"
+        report += f"RISK MATRIX ASSIGNED:\n-> {self.generated_risk_statement}\n\n"
         dominant_framework = "Unclassified Spectrum"
         max_pct = 0.0
         for school, pct in self.percentages.items():
@@ -246,7 +259,7 @@ class EnterpriseValidatorApp:
                     max_pct = pct
                     dominant_framework = school
                     
-        messagebox.showinfo("Semantic Metrics Summary", report)
+        messagebox.showinfo("Matrix Analytics Summary", report)
         self.report_btn.configure(state="normal")
         self.on_theme_changed(None)
         
@@ -254,40 +267,24 @@ class EnterpriseValidatorApp:
         try:
             conn = sqlite3.connect("matrix_permanent_vault.db")
             cursor = conn.cursor()
-            # Ensure the structure can map alternative framework columns cleanly
-            cursor.execute("PRAGMA table_info(evaluation_history)")
-            existing_cols = [col[1] for col in cursor.fetchall()]
-            if "risk_assessment" not in existing_cols:
-                cursor.execute("ALTER TABLE evaluation_history ADD COLUMN risk_assessment TEXT")
-                cursor.execute("ALTER TABLE evaluation_history ADD COLUMN legal_political TEXT")
-                
             cursor.execute("""
                 INSERT INTO evaluation_history (
-                    timestamp, proposition, dominant_classification,
+                    timestamp, proposition, dominant_classification, risk_statement,
                     empiricism, rationalism, determinism, existentialism,
                     nihilism, stoicism, utilitarianism, deontology,
                     absurdism, virtue_ethics, risk_assessment, legal_political
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
-                timestamp, self.current_statement, dominant_framework,
-                f"{self.percentages.get('Empiricism (Sensory)', 0.0):.1f}%",
-                f"{self.percentages.get('Rationalism (Logic)', 0.0):.1f}%",
-                f"{self.percentages.get('Determinism (Fatalism)', 0.0):.1f}%",
-                f"{self.percentages.get('Existentialism (Agency)', 0.0):.1f}%",
-                f"{self.percentages.get('Nihilism (Void Matrix)', 0.0):.1f}%",
-                f"{self.percentages.get('Stoicism (Resilience)', 0.0):.1f}%",
-                f"{self.percentages.get('Utilitarianism (Consequence)', 0.0):.1f}%",
-                f"{self.percentages.get('Deontology (Duty Matrix)', 0.0):.1f}%",
-                f"{self.percentages.get('Absurdism (Defiance)', 0.0):.1f}%",
-                f"{self.percentages.get('Virtue Ethics (Character)', 0.0):.1f}%",
-                f"{self.percentages.get('Risk Assessment Profile', 0.0):.1f}%",
-                f"{self.percentages.get('Legal-Political Framework', 0.0):.1f}%"
+                timestamp, self.current_statement, dominant_framework, self.generated_risk_statement,
+                f"{self.percentages.get('Empiricism (Sensory)', 0.0):.1f}%", f"{self.percentages.get('Rationalism (Logic)', 0.0):.1f}%",
+                f"{self.percentages.get('Determinism (Fatalism)', 0.0):.1f}%", f"{self.percentages.get('Existentialism (Agency)', 0.0):.1f}%",
+                f"{self.percentages.get('Nihilism (Void Matrix)', 0.0):.1f}%", f"{self.percentages.get('Stoicism (Resilience)', 0.0):.1f}%",
+                f"{self.percentages.get('Utilitarianism (Consequence)', 0.0):.1f}%", f"{self.percentages.get('Deontology (Duty Matrix)', 0.0):.1f}%",
+                f"{self.percentages.get('Absurdism (Defiance)', 0.0):.1f}%", f"{self.percentages.get('Virtue Ethics (Character)', 0.0):.1f}%",
+                f"{self.percentages.get('Risk Assessment Profile', 0.0):.1f}%", f"{self.percentages.get('Legal-Political Framework', 0.0):.1f}%"
             ))
-            conn.commit()
-            conn.close()
-            self.load_history_from_vault()
+            conn.commit(); conn.close(); self.load_history_from_vault()
         except Exception as e: print(f"Database sync hitch: {str(e)}")
-
     def compile_local_report(self):
         doc_title = self.entries["Custom Document Title:"].get().strip()
         auditor = self.entries["Target Auditor Initials:"].get().strip()
@@ -300,7 +297,7 @@ class EnterpriseValidatorApp:
         values = [v for k, v in self.percentages.items() if v > 0]
         if not categories: categories, values = ["Unclassified Spectrum"], [100.0]
         
-        fig, ax = plt.subplots(figsize=(6, 2.4))
+        fig, ax = plt.subplots(figsize=(6, 2.2))
         bars = ax.barh(categories, values, color=t["secondary"], height=0.45)
         ax.set_xlim(0, 100)
         ax.set_title("EPISTEMOLOGICAL CONFIGURATION MATRIX SCORES", fontsize=9, fontweight="bold", color=t["text"])
@@ -322,33 +319,32 @@ class EnterpriseValidatorApp:
                 Paragraph(doc_title.upper(), title_style), Spacer(1, 8),
                 Paragraph(f"<b>Generation Timestamp:</b> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", body_style),
                 Paragraph(f"<b>Compiled By:</b> Auditor ID [{auditor}]", body_style),
-                Paragraph(f"<b>Vault Ledger Sync Status:</b> RISK ASSESSMENT CHANNELS ACTIVE", body_style),
+                Paragraph(f"<b>Assigned Risk Statement:</b> <font color='red'><b>{self.generated_risk_statement}</b></font>", body_style),
                 Spacer(1, 10), Paragraph(f"<b>Evaluated Target Context:</b><br/><i>\"{self.current_statement}\"</i>", body_style), Spacer(1, 15)
             ]
             
-            data = [[Paragraph("Philosophical Framework Classification Profile", label_style), Paragraph("Match", label_style)]]
+            data = [[Paragraph("Philosophical & Operational Classification Profile", label_style), Paragraph("Match", label_style)]]
             for school, pct in self.percentages.items():
                 if pct > 0: data.append([Paragraph(school, body_style), Paragraph(f"{pct:.1f}%", body_style)])
                 
+            # Direct text string expression to bypass character markdown drops completely
             t_box = Table(data, colWidths=eval("[380" + ", 1" + "00]"))
             t_box.setStyle(TableStyle([
                 ('BACKGROUND', (0, 0), (1, 0), colors.HexColor(t["accent"])), ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
                 ('BOTTOMPADDING', (0, 0), (-1, 0), 6), ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor(t["card"])),
                 ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor(t["secondary"])), ('PADDING', (0, 1), (-1, -1), 5)
             ]))
-            story.append(t_box); story.append(Spacer(1, 15)); story.append(Image(chart_filename, width=400, height=158))
+            story.append(t_box); story.append(Spacer(1, 15)); story.append(Image(chart_filename, width=400, height=146))
             
             def draw_background(canvas, document):
-                canvas.saveState()
-                canvas.setFillColor(colors.HexColor(t["bg"]))
-                # Explicitly unpack width and height into plain integers to kill the tuple conflict permanently
+                canvas.saveState(); canvas.setFillColor(colors.HexColor(t["bg"]))
+                # Plain, explicitly unpacked width and height parameters to resolve the abs() conflict permanently
                 pg_w, pg_h = document.pagesize
-                canvas.rect(0, 0, pg_w, pg_h, fill=True, stroke=False)
-                canvas.restoreState()
+                canvas.rect(0, 0, pg_w, pg_h, fill=True, stroke=False); canvas.restoreState()
                 
             doc.build(story, onFirstPage=draw_background)
             if os.path.exists(chart_filename): os.remove(chart_filename)
-            messagebox.showinfo("Adaptive PDF Compiled", f"Success! Risk channels successfully generated:\n\n'{pdf_filename}'")
+            messagebox.showinfo("Adaptive PDF Compiled", f"Success! Risk statement attached and PDF compiled successfully.")
         except Exception as e: messagebox.showerror("PDF Compilation Error", str(e))
 
 if __name__ == "__main__":
