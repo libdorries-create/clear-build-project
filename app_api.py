@@ -6,10 +6,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from scipy.stats import shapiro
-import re, os, csv
+import re, os, sqlite3
 from datetime import datetime
 
-# ReportLab Engine Layout Tools
+# ReportLab Core PDF Engines
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -18,27 +18,49 @@ from reportlab.lib import colors
 def linear_theory(x, m, c): return m * x + c
 def polynomial_theory(x, a, b, c): return a * (x**2) + b * x + c
 
+# --- PIPELINE A: ENTERPRISE SQLITE DATABASE INITIALISATION ---
+def initialise_database():
+    """Establishes a permanent, structured relational database ledger schema file."""
+    conn = sqlite3.connect("matrix_permanent_vault.db")
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS evaluation_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TEXT,
+            proposition TEXT,
+            dominant_classification TEXT,
+            empiricism TEXT, rationalism TEXT, determinism TEXT, existentialism TEXT,
+            nihilism TEXT, stoicism TEXT, utilitarianism TEXT, deontology TEXT,
+            absurdism TEXT, virtue_ethics TEXT
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+initialise_database()
+
 class EnterpriseValidatorApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Universal Matrix Platform - Adaptive Canvas Edition")
+        self.root.title("Universal Matrix Platform - Architectural Tier Edition")
         self.root.geometry("620x680")
         
-        # --- SECURED BACKGROUND DICTIONARY CORE ---
+        # --- PIPELINE B: ADVANCED SEMANTIC PHRASE DICTIONARY MATRIX ---
+        # Upgraded from single snippets to capture multi-word conceptual logic flows
         self.dictionary = {
-            "Empiricism (Sensory)": ["sensory", "observ", "data", "experi", "evidence"],
-            "Rationalism (Logic)": ["logic", "reason", "mind", "thought", "intellect"],
-            "Determinism (Fatalism)": ["predetermine", "caus", "dictat", "fate", "inevitable"],
-            "Existentialism (Agency)": ["choice", "freedom", "free will", "exist", "create purpose"],
-            "Nihilism (Void Matrix)": ["no objective", "intrinsic meaning", "meaningless", "indifferent", "void", "nothingness"],
-            "Stoicism (Resilience)": ["emotional control", "hardship", "calm", "stoic", "endur", "fortitude"],
-            "Utilitarianism (Consequence)": ["utility", "greatest good", "consequence", "maximize happiness", "welfare"],
-            "Deontology (Duty Matrix)": ["duty", "obligation", "rule", "categorical imperative", "absolute law"],
-            "Absurdism (Defiance)": ["absurd", "rebellion", "meaningless conflict", "sisyphus", "embrace the chaos"],
-            "Virtue Ethics (Character)": ["virtue", "character", "moral excellence", "flourish", "wisdom", "temperance"]
+            "Empiricism (Sensory)": ["empirical data", "sensory observation", "scientific evidence", "measurable observation", "verifiable data"],
+            "Rationalism (Logic)": ["pure reason", "logical deduction", "intellectual concept", "mental construct", "rational mind"],
+            "Determinism (Fatalism)": ["predetermined fate", "causal chain", "inevitable sequence", "dictated by destiny", "pregestated variables"],
+            "Existentialism (Agency)": ["create purpose", "absolute freedom", "personal choice", "individual agency", "authentic existence"],
+            "Nihilism (Void Matrix)": ["no objective value", "intrinsic meaning", "inherently meaningless", "cold indifference", "cosmic void"],
+            "Stoicism (Resilience)": ["emotional control", "unshakeable calm", "enduring hardship", "mental fortitude", "stoic resilience"],
+            "Utilitarianism (Consequence)": ["maximize utility", "greatest good", "maximize happiness", "collective welfare", "consequential outcome"],
+            "Deontology (Duty Matrix)": ["absolute moral duty", "categorical imperative", "rule of law", "binding obligation", "unconditional command"],
+            "Absurdism (Defiance)": ["absurd nature", "meaningless conflict", "embrace the chaos", "sisyphean defiance", "rebellion against the void"],
+            "Virtue Ethics (Character)": ["moral excellence", "human flourishing", "virtuous character", "practical wisdom", "temperance and justice"]
         }
         
-        # --- UI & REPORT MATCHING THEMES DATABASE ---
+        # UI Themes Database Configuration
         self.themes = {
             "Cyberpunk Matrix": {"bg": "#121212", "card": "#1e1e1e", "text": "#ffffff", "accent": "#00ff66", "secondary": "#00bcff"},
             "High-Contrast Slate": {"bg": "#1a202c", "card": "#2d3748", "text": "#f7fafc", "accent": "#edf2f7", "secondary": "#63b3ed"},
@@ -163,35 +185,59 @@ class EnterpriseValidatorApp:
         proposition = self.current_statement.lower()
         scores = {}
         total_hits = 0
-        for school, keywords in self.dictionary.items():
-            count = sum(len(re.findall(rf"{word}", proposition)) for word in keywords)
+        
+        # Upgraded computation loop mapping multi-word phrases cleanly
+        for school, phrases in self.dictionary.items():
+            count = sum(len(re.findall(rf"{phrase}", proposition)) for phrase in phrases)
             scores[school] = count
             total_hits += count
+            
         self.percentages = {k: (v / total_hits * 100) if total_hits > 0 else 0.0 for k, v in scores.items()}
         
         report = "--- SPECTRUM SCORES ---\n\n"
+        dominant_framework = "Unclassified Spectrum"
+        max_pct = 0.0
         for school, pct in self.percentages.items():
-            if pct > 0: report += f" • {school}: {pct:.1f}%\n"
-        messagebox.showinfo("Evaluation Metric Summary", report)
+            if pct > 0: 
+                report += f" • {school}: {pct:.1f}%\n"
+                if pct > max_pct:
+                    max_pct = pct
+                    dominant_framework = school
+                    
+        messagebox.showinfo("Semantic Metrics Summary", report)
         self.report_btn.configure(state="normal")
         self.on_theme_changed(None)
         
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        with open("matrix_analysis_history.log", "a") as f:
-            f.write(f"\n[{timestamp}]\nContext: \"{self.current_statement}\"\n")
-            for school, pct in self.percentages.items():
-                if pct > 0: f.write(f" - {school}: {pct:.1f}%\n")
-                
-        csv_file = "matrix_comprehensive_ledger.csv"
-        file_exists = os.path.exists(csv_file)
-        with open(csv_file, "a", newline="") as f:
-            writer = csv.writer(f)
-            if not file_exists:
-                writer.writerow(["Timestamp", "Evaluated Proposition"] + list(self.dictionary.keys()))
-            row_data = [timestamp, self.current_statement]
-            for school in self.dictionary.keys():
-                row_data.append(f"{self.percentages.get(school, 0.0):.1f}%")
-            writer.writerow(row_data)
+        
+        # COMMIT TRANSACTION DIRECTLY TO PERMANENT SQL DATABASE VAULT
+        try:
+            conn = sqlite3.connect("matrix_permanent_vault.db")
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO evaluation_history (
+                    timestamp, proposition, dominant_classification,
+                    empiricism, rationalism, determinism, existentialism,
+                    nihilism, stoicism, utilitarianism, deontology,
+                    absurdism, virtue_ethics
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                timestamp, self.current_statement, dominant_framework,
+                f"{self.percentages.get('Empiricism (Sensory)', 0.0):.1f}%",
+                f"{self.percentages.get('Rationalism (Logic)', 0.0):.1f}%",
+                f"{self.percentages.get('Determinism (Fatalism)', 0.0):.1f}%",
+                f"{self.percentages.get('Existentialism (Agency)', 0.0):.1f}%",
+                f"{self.percentages.get('Nihilism (Void Matrix)', 0.0):.1f}%",
+                f"{self.percentages.get('Stoicism (Resilience)', 0.0):.1f}%",
+                f"{self.percentages.get('Utilitarianism (Consequence)', 0.0):.1f}%",
+                f"{self.percentages.get('Deontology (Duty Matrix)', 0.0):.1f}%",
+                f"{self.percentages.get('Absurdism (Defiance)', 0.0):.1f}%",
+                f"{self.percentages.get('Virtue Ethics (Character)', 0.0):.1f}%"
+            ))
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            print(f"Database sync hitch: {str(e)}")
 
     def compile_local_report(self):
         doc_title = self.entries["Custom Document Title:"].get().strip()
@@ -200,15 +246,12 @@ class EnterpriseValidatorApp:
         
         pdf_filename = f"Matrix_Report_{timestamp}.pdf"
         chart_filename = f"temp_chart_{timestamp}.png"
-        
-        # Pull active visual theme profile attributes dynamically
         t = self.themes[self.current_theme]
         
         categories = [k for k, v in self.percentages.items() if v > 0]
         values = [v for k, v in self.percentages.items() if v > 0]
         if not categories: categories, values = ["Unclassified Spectrum"], [100.0]
         
-        # Formulate chart using exact active palette profiles
         fig, ax = plt.subplots(figsize=(6, 2.2))
         bars = ax.barh(categories, values, color=t["secondary"], height=0.45)
         ax.set_xlim(0, 100)
@@ -216,7 +259,6 @@ class EnterpriseValidatorApp:
         ax.set_facecolor(t["bg"]); fig.patch.set_facecolor(t["bg"])
         ax.spines['bottom'].color = t["text"]; ax.spines['left'].color = t["text"]
         ax.tick_params(colors=t["text"])
-        
         for bar in bars:
             ax.text(bar.get_width() + 1, bar.get_y() + bar.get_height()/2, f'{bar.get_width():.1f}%', va='center', fontsize=8, fontweight='bold', color=t["text"])
         plt.tight_layout()
@@ -224,10 +266,8 @@ class EnterpriseValidatorApp:
         plt.close()
         
         try:
-            # Build PDF mirroring active canvas background colours
             doc = SimpleDocTemplate(pdf_filename, pagesize=letter)
             styles = getSampleStyleSheet()
-            
             title_style = ParagraphStyle('TStyle', parent=styles['Heading1'], fontSize=18, textColor=colors.HexColor(t["secondary"]), spaceAfter=12)
             body_style = ParagraphStyle('BStyle', parent=styles['Normal'], fontSize=10, textColor=colors.HexColor(t["text"]), leading=14)
             label_style = ParagraphStyle('LStyle', parent=styles['Normal'], fontSize=10, textColor=colors.HexColor(t["bg"]), fontName="Helvetica-Bold")
@@ -237,7 +277,7 @@ class EnterpriseValidatorApp:
                 Spacer(1, 8),
                 Paragraph(f"<b>Generation Timestamp:</b> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", body_style),
                 Paragraph(f"<b>Compiled By:</b> Auditor ID [{auditor}]", body_style),
-                Paragraph(f"<b>Visual Contrast Profile Sync:</b> Enforced [{self.current_theme}]", body_style),
+                Paragraph(f"<b>Vault Ledger Sync Status:</b> RELATIONAL SQL DATABASE LOCKED", body_style),
                 Spacer(1, 10),
                 Paragraph(f"<b>Evaluated Target Context:</b><br/><i>\"{self.current_statement}\"</i>", body_style),
                 Spacer(1, 15)
@@ -245,13 +285,10 @@ class EnterpriseValidatorApp:
             
             data = [[Paragraph("Philosophical Framework Classification Profile", label_style), Paragraph("Match", label_style)]]
             for school, pct in self.percentages.items():
-                if pct > 0:
-                    data.append([Paragraph(school, body_style), Paragraph(f"{pct:.1f}%", body_style)])
+                if pct > 0: data.append([Paragraph(school, body_style), Paragraph(f"{pct:.1f}%", body_style)])
                 
-                        # Setting explicit dimensions for your description profile and score columns
-            t_box = Table(data, colWidths=[320, 80])
+            t_box = Table(data, colWidths=[380, 70])
             t_box.setStyle(TableStyle([
-
                 ('BACKGROUND', (0, 0), (1, 0), colors.HexColor(t["accent"])),
                 ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
                 ('BOTTOMPADDING', (0, 0), (-1, 0), 6),
@@ -261,22 +298,18 @@ class EnterpriseValidatorApp:
             ]))
             story.append(t_box)
             story.append(Spacer(1, 15))
-            story.append(Paragraph("<b>Visual Configuration Analysis Overlay:</b>", body_style))
-            story.append(Spacer(1, 5))
             story.append(Image(chart_filename, width=400, height=146))
             
-            # Draw adaptive overall background color page canvas profile
             def draw_background(canvas, document):
                 canvas.saveState()
                 canvas.setFillColor(colors.HexColor(t["bg"]))
-                canvas.rect(0, 0, document.pagesize[0], document.pagesize[1], fill=True, stroke=False)
+                canvas.rect(0, 0, document.pagesize, document.pagesize, fill=True, stroke=False)
                 canvas.restoreState()
                 
             doc.build(story, onFirstPage=draw_background)
             if os.path.exists(chart_filename): os.remove(chart_filename)
             messagebox.showinfo("Adaptive PDF Compiled", f"Success! Contrast-aligned master report generated:\n\n'{pdf_filename}'")
-        except Exception as e:
-            messagebox.showerror("PDF Compilation Error", str(e))
+        except Exception as e: messagebox.showerror("PDF Compilation Error", str(e))
 
 if __name__ == "__main__":
     root = tk.Tk()
