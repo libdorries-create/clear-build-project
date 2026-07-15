@@ -97,7 +97,7 @@ class EnterpriseValidatorApp:
         self.theme_dropdown = ttk.Combobox(self.theme_frame, textvariable=self.theme_var, values=list(self.themes.keys()), state="readonly", width=18)
         self.theme_dropdown.pack(side="left", padx=5)
         self.theme_dropdown.bind("<<ComboboxSelected>>", self.on_theme_changed)
-
+  
     def apply_theme_profile(self):
         t = self.themes[self.current_theme]
         self.root.configure(bg=t["bg"])
@@ -105,24 +105,30 @@ class EnterpriseValidatorApp:
         self.tab2.configure(bg=t["bg"])
         self.tab3.configure(bg=t["bg"])
         self.theme_frame.configure(bg=t["bg"])
-        self.theme_lbl.configure(bg=t["bg"], fg=t["text"], font=("Helvetica", 9, "bold"))
-        self.math_title.configure(bg=t["bg"], fg=t["accent"])
-        self.status_lbl.configure(bg=t["bg"], fg=t["text"])
-        self.text_title.configure(bg=t["bg"], fg=t["secondary"])
-        self.prompt_lbl.configure(bg=t["bg"], fg=t["text"])
-        self.report_frame.configure(bg=t["bg"], fg=t["accent"], background=t["bg"])
-        self.text_box.configure(bg=t["card"], fg=t["text"], highlightbackground=t["card"])
-        self.hist_title.configure(bg=t["bg"], fg=t["accent"])
-        self.model_lbl.configure(bg=t["bg"], fg=t["text"])
         
-        for lbl in self.form_labels: lbl.configure(bg=t["bg"], fg=t["text"])
-        for ent in self.entries.values(): ent.configure(bg=t["card"], fg=t["text"], highlightbackground=t["card"])
-        self.upload_btn.configure(bg=t["card"], fg=t["text"], font=("Helvetica", 10, "bold"), bd=0)
-        self.math_btn.configure(bg=t["accent"], fg=t["bg"], font=("Helvetica", 11, "bold"), bd=0)
-        self.eval_btn.configure(bg=t["secondary"], fg=t["bg"], font=("Helvetica", 11, "bold"), bd=0)
-        self.report_btn.configure(bg=t["accent"], fg=t["bg"], font=("Helvetica", 10, "bold"), bd=0)
-        self.refresh_btn.configure(bg=t["secondary"], fg=t["bg"], font=("Helvetica", 10, "bold"), bd=0)
-
+        # Stark, high-visibility title text to completely drop eyestrain
+        self.theme_lbl.configure(bg=t["bg"], fg="#ffffff", font=("Helvetica", 9, "bold"))
+        self.math_title.configure(bg=t["bg"], fg=t["accent"], font=("Helvetica", 13, "bold"))
+        self.status_lbl.configure(bg=t["bg"], fg="#ffffff", font=("Helvetica", 10, "bold", "italic"))
+        
+        self.text_title.configure(bg=t["bg"], fg=t["secondary"])
+        self.prompt_lbl.configure(bg=t["bg"], fg="#ffffff")
+        self.report_frame.configure(bg=t["bg"], fg=t["accent"], background=t["bg"])
+        self.text_box.configure(bg=t["card"], fg="#ffffff", highlightbackground=t["card"])
+        self.hist_title.configure(bg=t["bg"], fg=t["accent"])
+        
+        for lbl in self.form_labels: lbl.configure(bg=t["bg"], fg="#ffffff")
+        for ent in self.entries.values(): ent.configure(bg=t["card"], fg="#ffffff", highlightbackground=t["card"])
+        
+        # --- STARK HIGH-CONTRAST LIGHT BACKGROUND BUTTONS WITH BLACK TEXT ---
+        # Forces crisp solid backgrounds with bold black text to shield the eyes from straining
+        self.upload_btn.configure(bg="#f8fafc", fg="#000000", activeforeground="#ffffff", activebackground="#475569", font=("Helvetica", 10, "bold"), bd=1, relief="solid")
+        self.math_btn.configure(bg="#ffffff", fg="#000000", activeforeground="#ffffff", activebackground="#1e293b", font=("Helvetica", 11, "bold"), bd=1, relief="solid")
+        
+        self.eval_btn.configure(bg=t["secondary"], fg="#000000", font=("Helvetica", 11, "bold"), bd=0)
+        self.report_btn.configure(bg=t["accent"], fg="#000000", font=("Helvetica", 10, "bold"), bd=0)
+        self.refresh_btn.configure(bg=t["secondary"], fg="#000000", font=("Helvetica", 10, "bold"), bd=0)
+    
     def on_theme_changed(self, event):
         self.current_theme = self.theme_var.get()
         self.apply_theme_profile()
@@ -223,27 +229,16 @@ class EnterpriseValidatorApp:
         except Exception as e: messagebox.showerror("Ingestion Error", str(e))
 
     def compute_math(self):
-        """Executes postgraduate model optimization, comparing objective regression parameters."""
         stat, p_val = shapiro(self.data_y)
         ss_tot = np.sum((self.data_y - np.mean(self.data_y))**2)
-        model_type = self.model_var.get()
+        popt_lin, _ = curve_fit(linear_theory, self.data_x, self.data_y)
+        r2_lin = 1 - (np.sum((self.data_y - linear_theory(self.data_x, *popt_lin))**2) / ss_tot)
+        messagebox.showinfo("Matrix Computations Complete", f"Gaussian Metric Profile: {p_val:.4f}\nLinear Matrix Score: R² = {r2_lin:.4f}")
         
         plt.figure(figsize=(8, 4))
-        plt.scatter(self.data_x, self.data_y, color='white', edgecolors='#00ff66', label='Empirical Array Points')
+        plt.scatter(self.data_x, self.data_y, color='white', edgecolors='#00ff66', label='Injected Points')
         x_smooth = np.linspace(min(self.data_x), max(self.data_x), 300)
-        
-        if "Linear" in model_type:
-            popt, _ = curve_fit(linear_theory, self.data_x, self.data_y)
-            r2 = 1 - (np.sum((self.data_y - linear_theory(self.data_x, *popt))**2) / ss_tot)
-            plt.plot(x_smooth, linear_theory(x_smooth, *popt), color='#00bcff', label=f'Linear Model (R²={r2:.4f})')
-            msg = f"Linear Convergence Confirmed.\nResidual Optimization Score: R² = {r2:.4f}"
-        else:
-            popt, _ = curve_fit(polynomial_theory(self.data_x, self.data_y))
-            r2 = 1 - (np.sum((self.data_y - polynomial_theory(self.data_x, *popt))**2) / ss_tot)
-            plt.plot(x_smooth, polynomial_theory(x_smooth, *popt), color='#d6bcfa', label=f'Quadratic Model (R²={r2:.4f})')
-            msg = f"Polynomial Convergence Confirmed.\nOptimized Model Score: R² = {r2:.4f}"
-            
-        messagebox.showinfo("Regression Core Complete", f"Gaussian Metric Profile: p-val = {p_val:.4f}\n{msg}")
+        plt.plot(x_smooth, linear_theory(x_smooth, *popt_lin), color='#00bcff', label=f'Linear Overlap (R²={r2_lin:.4f})')
         ax = plt.gca(); t = self.themes[self.current_theme]
         ax.set_facecolor(t["bg"]); plt.gcf().patch.set_facecolor(t["bg"])
         plt.legend(); plt.grid(True, color='#444444'); plt.show()
