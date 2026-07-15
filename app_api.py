@@ -1,67 +1,40 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
 import numpy as np
 from scipy.optimize import curve_fit
 from scipy.stats import shapiro
 import re
-from typing import List, Dict
+from datetime import datetime
 
-app = FastAPI(title="Universal Empirical & Philosophical API", version="1.0.0")
-
-# --- CORE MATH MODELS ---
 def linear_theory(x, m, c): return m * x + c
 def polynomial_theory(x, a, b, c): return a * (x**2) + b * x + c
 
-# --- PYDANTIC SCHEMAS FOR DATA ACCEPATANCE ---
-class MathDataPayload(BaseModel):
-    x: List[float]
-    y: List[float]
-
-class PhilosophyPayload(BaseModel):
-    text: str
-
-# --- ENDPOINT 1: DATA VALIDATION & CURVE FITTING ---
-@app.post("/api/v1/validate-math")
-def validate_math_matrix(payload: MathDataPayload):
-    if len(payload.x) != len(payload.y) or len(payload.x) < 3:
-        raise HTTPException(status_code=400, detail="X and Y arrays must have identical dimensions and contain at least 3 points.")
+def execute_computational_matrices():
+    print("\n" + "="*50)
+    print("      UNIVERSAL MATRIX DATA VALIDATOR ACTIVATED")
+    print("="*50)
+    print(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
     
-    data_x = np.array(payload.x)
-    data_y = np.array(payload.y)
+    # --- PIPELINE 1: MATH ANALYTICS DATA ---
+    print("[1/2] RUNNING MATHEMATICAL THEORETICAL CURVE FITTING...")
+    data_x = np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
+    data_y = np.array([2.1, 3.9, 6.1, 8.0, 9.9, 12.2])
     
-    # Statistical Normality Check
     stat, p_val = shapiro(data_y)
     gaussian_status = "PASSED" if p_val > 0.05 else "REJECTED"
     
-    # Curve Fitting Matrix
     ss_tot = np.sum((data_y - np.mean(data_y))**2)
-    if ss_tot == 0:
-        raise HTTPException(status_code=400, detail="Variance of Y data is zero; cannot compute R².")
-        
-    def get_r2(tf, *p): return 1 - (np.sum((data_y - tf(data_x, *p))**2) / ss_tot)
+    get_r2 = lambda tf, p: 1 - (np.sum((data_y - tf(data_x, *p))**2) / ss_tot)
     
-    try:
-        popt_lin, _ = curve_fit(linear_theory, data_x, data_y)
-        r2_lin = get_r2(linear_theory, *popt_lin)
-    except Exception:
-        r2_lin, popt_lin = 0.0, [0.0, 0.0]
-        
-    try:
-        popt_poly, _ = curve_fit(polynomial_theory, data_x, data_y)
-        r2_poly = get_r2(polynomial_theory, *popt_poly)
-    except Exception:
-        r2_poly, popt_poly = 0.0, [0.0, 0.0, 0.0]
-
-    return {
-        "shapiro_wilk": {"p_value": float(p_val), "status": gaussian_status},
-        "linear_fit": {"r_squared": float(r2_lin), "parameters": [float(n) for n in popt_lin]},
-        "polynomial_fit": {"r_squared": float(r2_poly), "parameters": [float(n) for n in popt_poly]}
-    }
-
-# --- ENDPOINT 2: PHILOSOPHICAL SPECTRUM PARSER ---
-@app.post("/api/v1/validate-philosophy")
-def validate_philosophy_matrix(payload: PhilosophyPayload):
-    proposition = payload.text.lower()
+    popt_lin, _ = curve_fit(linear_theory, data_x, data_y)
+    r2_lin = get_r2(linear_theory, popt_lin)
+    
+    print(f" -> Shapiro-Wilk Gaussian Status: {gaussian_status} (p={p_val:.4f})")
+    print(f" -> Linear Alignment Matrix Score: R² = {r2_lin:.4f}")
+    
+    # --- PIPELINE 2: TEXT CONCEPT ANALYSIS ---
+    print("\n[2/2] RUNNING PHILOSOPHICAL CONFIGURATION EVALUATION...")
+    proposition = "Life possesses no objective value or intrinsic meaning. The universe is cold and indifferent. Therefore, one must cultivate absolute emotional control, enduring hardship with unshakeable stoic calm."
+    print(f" Target Text: \"{proposition[:60]}...\"")
+    
     dictionary = {
         "Empiricism (Sensory)": ["sensory", "observ", "data", "experi"],
         "Rationalism (Logic)": ["logic", "reason", "mind", "thought"],
@@ -74,14 +47,16 @@ def validate_philosophy_matrix(payload: PhilosophyPayload):
     scores = {}
     total_hits = 0
     for school, keywords in dictionary.items():
-        count = sum(len(re.findall(rf"{word}", proposition)) for word in keywords)
+        count = sum(len(re.findall(rf"{word}", proposition.lower())) for word in keywords)
         scores[school] = count
         total_hits += count
         
-    percentages = {k: float(v / total_hits * 100) if total_hits > 0 else 0.0 for k, v in scores.items()}
-    
-    return {
-        "raw_text_length": len(payload.text),
-        "total_keyword_hits": total_hits,
-        "spectrum_alignment": percentages
-    }
+    print("\n--- MATRIX ALIGNMENT MATCH SPECTRUM SCORES ---")
+    for school, count in scores.items():
+        pct = (count / total_hits * 100) if total_hits > 0 else 0.0
+        if pct > 0:
+            print(f" * {school}: {pct:.1f}%")
+    print("="*50 + "\n")
+
+if __name__ == "__main__":
+    execute_computational_matrices()
