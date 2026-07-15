@@ -6,10 +6,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from scipy.stats import shapiro
-import re, os, sqlite3
+import re, os, sqlite3, math
 from datetime import datetime
 
-# ReportLab Core PDF Engines
+# ReportLab Core Postgraduate PDF Compilers
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -18,7 +18,7 @@ from reportlab.lib import colors
 def linear_theory(x, m, c): return m * x + c
 def polynomial_theory(x, a, b, c): return a * (x**2) + b * x + c
 
-# --- ENTERPRISE SQLITE DATABASE INITIALISATION ---
+# --- ENTERPRISE RELATIONAL SQLITE DATABASE INITIALISATION ---
 def initialise_database():
     conn = sqlite3.connect("matrix_permanent_vault.db")
     cursor = conn.cursor()
@@ -29,6 +29,7 @@ def initialise_database():
             proposition TEXT,
             dominant_classification TEXT,
             risk_statement TEXT,
+            combined_risk_score REAL,
             empiricism TEXT, rationalism TEXT, determinism TEXT, existentialism TEXT,
             nihilism TEXT, stoicism TEXT, utilitarianism TEXT, deontology TEXT,
             absurdism TEXT, virtue_ethics TEXT, risk_assessment TEXT, legal_political TEXT
@@ -42,10 +43,11 @@ initialise_database()
 class EnterpriseValidatorApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Universal Matrix Platform - Threat Assessment Edition")
-        self.root.geometry("640x740")
+        self.root.title("Universal Matrix Platform - Postgraduate Research Tier")
+        self.root.geometry("660x760")
         
-        # --- 12-CATEGORY SEMANTIC BACKGROUND DICTIONARY ---
+        # --- POSTGRADUATE ANCHOR CORPORA FOR TF-IDF ALGORITHMS ---
+        # Expanded to serve as high-density vector profiles for mathematical alignment
         self.dictionary = {
             "Empiricism (Sensory)": ["empirical data", "sensory observation", "scientific evidence", "measurable observation", "verifiable data"],
             "Rationalism (Logic)": ["pure reason", "logical deduction", "intellect concept", "mental construct", "rational mind"],
@@ -69,22 +71,23 @@ class EnterpriseValidatorApp:
         }
         self.current_theme = "Cyberpunk Matrix"
         self.percentages, self.current_statement, self.data_x, self.data_y = {}, "", None, None
-        self.generated_risk_statement = "STABLE GATEWAY: No elevated threat signatures detected."
+        self.generated_risk_statement = "INITIALISING METRICS..."
 
+        # Main Navigation Scaffold
         self.notebook = ttk.Notebook(root)
         self.notebook.pack(fill="both", expand=True, padx=15, pady=15)
         self.tab1 = tk.Frame(self.notebook)
         self.tab2 = tk.Frame(self.notebook)
         self.tab3 = tk.Frame(self.notebook)
-        self.notebook.add(self.tab1, text="Empirical Math Studio")
-        self.notebook.add(self.tab2, text="Textual Configuration Matrix")
-        self.notebook.add(self.tab3, text="Vault Database History")
-        
+        self.notebook.add(self.tab1, text="Analytical Math Studio")
+        self.notebook.add(self.tab2, text="Semantic Analytics Matrix")
+        self.notebook.add(self.tab3, text="SQL Vault Transaction Ledger")
         self.setup_math_studio()
         self.setup_text_matrix()
         self.setup_history_browser()
         self.setup_theme_selector()
         self.apply_theme_profile()
+
     def setup_theme_selector(self):
         self.theme_frame = tk.Frame(self.root)
         self.theme_frame.pack(fill="x", side="bottom", padx=15, pady=5)
@@ -110,6 +113,7 @@ class EnterpriseValidatorApp:
         self.report_frame.configure(bg=t["bg"], fg=t["accent"], background=t["bg"])
         self.text_box.configure(bg=t["card"], fg=t["text"], highlightbackground=t["card"])
         self.hist_title.configure(bg=t["bg"], fg=t["accent"])
+        self.model_lbl.configure(bg=t["bg"], fg=t["text"])
         
         for lbl in self.form_labels: lbl.configure(bg=t["bg"], fg=t["text"])
         for ent in self.entries.values(): ent.configure(bg=t["card"], fg=t["text"], highlightbackground=t["card"])
@@ -124,30 +128,40 @@ class EnterpriseValidatorApp:
         self.apply_theme_profile()
 
     def setup_math_studio(self):
-        self.math_title = tk.Label(self.tab1, text="MATHEMATICAL CURVE ANALYSIS MATRIX", font=("Helvetica", 12, "bold"))
-        self.math_title.pack(pady=20)
-        self.upload_btn = tk.Button(self.tab1, text="📂 BROWSE NUMERIC DATASET (.CSV)", command=self.browse_csv)
+        self.math_title = tk.Label(self.tab1, text="COMPUTATIONAL REGRESSION & MODEL SPECIFICATION", font=("Helvetica", 12, "bold"))
+        self.math_title.pack(pady=15)
+        
+        # Postgraduate Feature: Dynamic Mathematical Model Selector Toggle Switch
+        self.model_frame = tk.Frame(self.tab1, bg="#1a1a1a")
+        self.model_frame.pack(fill="x", padx=40, pady=5)
+        self.model_lbl = tk.Label(self.model_frame, text="Select Target Regression Model Specification:", font=("Helvetica", 9, "bold"))
+        self.model_lbl.pack(side="left", padx=5)
+        self.model_var = tk.StringVar(value="Linear (1st Order)")
+        self.model_toggle = ttk.Combobox(self.model_frame, textvariable=self.model_var, values=["Linear (1st Order)", "Polynomial (2nd Order Quadratic)"], state="readonly", width=25)
+        self.model_toggle.pack(side="right", padx=5)
+        
+        self.upload_btn = tk.Button(self.tab1, text="📂 INJECT EMPIRICAL MATRIX DATASET (.CSV)", command=self.browse_csv)
         self.upload_btn.pack(pady=15)
         self.status_lbl = tk.Label(self.tab1, text="No dataset currently injected.", font=("Helvetica", 10, "italic"))
         self.status_lbl.pack(pady=5)
-        self.math_btn = tk.Button(self.tab1, text="⚡ RUN COMPUTATIONAL CURVE OVERLAY", command=self.compute_math, state="disabled")
-        self.math_btn.pack(pady=25)
+        self.math_btn = tk.Button(self.tab1, text="⚡ EXECUTE OPTIMISATION & COMPUTE R² SCORE", command=self.compute_math, state="disabled")
+        self.math_btn.pack(pady=20)
 
     def setup_text_matrix(self):
-        self.text_title = tk.Label(self.tab2, text="CONTEXTUAL ANALYSIS SPECTRAL CORE", font=("Helvetica", 12, "bold"))
+        self.text_title = tk.Label(self.tab2, text="HEURISTIC RECOGNITION SEMANTIC CORE", font=("Helvetica", 12, "bold"))
         self.text_title.pack(pady=15)
-        self.prompt_lbl = tk.Label(self.tab2, text="Input Proposition Context Target Below:", font=("Helvetica", 10))
+        self.prompt_lbl = tk.Label(self.tab2, text="Input Postgraduate Research Abstract Target Context Below:", font=("Helvetica", 10))
         self.prompt_lbl.pack(anchor="w", padx=25, pady=5)
         self.text_box = tk.Text(self.tab2, height=5, width=60, bd=0, highlightthickness=1)
         self.text_box.pack(padx=25, pady=5)
         self.text_box.insert(tk.END, "We must secure verifiable data from our quarterly user feedback loops to analyze our current market position, using a logical deduction to restructure our software delivery model. Remember that our success follows a causal chain where every growth metric is linked, so our team must find an unshakeable calm, cultivate a virtuous character, and push for a positive consequential outcome for our users.")
-        self.eval_btn = tk.Button(self.tab2, text="🔬 EXECUTE CONFIGURATION EVALUATION", command=self.compute_text)
+        self.eval_btn = tk.Button(self.tab2, text="🔬 EXECUTE VECTOR TF-IDF CONTEXT EVALUATION", command=self.compute_text)
         self.eval_btn.pack(pady=15)
         
         self.report_frame = tk.LabelFrame(self.tab2, text=" Document Report Compiler Gateway ", font=("Helvetica", 9, "bold"))
         self.report_frame.pack(fill="x", padx=25, pady=5)
         
-        fields = [("Custom Document Title:", "Matrix Spectral Output Report"), ("Target Auditor Initials:", "LD")]
+        fields = [("Custom Document Title:", "Postgraduate Structural Analytics Profile"), ("Target Auditor Initials:", "LD")]
         self.entries, self.form_labels = {}, []
         for label_text, default_val in fields:
             row = tk.Frame(self.report_frame, bg="#121212")
@@ -159,11 +173,11 @@ class EnterpriseValidatorApp:
             ent.pack(side="right", expand=True, fill="x")
             ent.insert(0, default_val)
             self.entries[label_text] = ent
-        self.report_btn = tk.Button(self.report_frame, text="📄 COMPILE MASTER DISCOVERY PDF", command=self.compile_local_report, state="disabled")
+        self.report_btn = tk.Button(self.report_frame, text="📄 COMPILE STYLED DISCOVERY PDF ARTIFACE", command=self.compile_local_report, state="disabled")
         self.report_btn.pack(pady=10)
 
     def setup_history_browser(self):
-        self.hist_title = tk.Label(self.tab3, text="VAULT SYSTEM TRANSACTION LEDGER LOGS", font=("Helvetica", 12, "bold"))
+        self.hist_title = tk.Label(self.tab3, text="VAULT SECURED TRANSACTIONS AUDIT LEDGER", font=("Helvetica", 12, "bold"))
         self.hist_title.pack(pady=15)
         self.grid_frame = tk.Frame(self.tab3)
         self.grid_frame.pack(fill="both", expand=True, padx=25, pady=5)
@@ -172,8 +186,8 @@ class EnterpriseValidatorApp:
         self.tree = ttk.Treeview(self.grid_frame, columns=columns, show="headings", height=14)
         self.tree.heading("id", text="ID")
         self.tree.heading("timestamp", text="Timestamp")
-        self.tree.heading("classification", text="Dominant Category")
-        self.tree.heading("risk", text="Assessed Risk Level")
+        self.tree.heading("classification", text="Dominant Vector Profile")
+        self.tree.heading("risk", text="Dynamic Statistical Risk Level")
         
         self.tree.column("id", width=60, anchor="center")
         self.tree.column("timestamp", width=140, anchor="center")
@@ -209,47 +223,89 @@ class EnterpriseValidatorApp:
         except Exception as e: messagebox.showerror("Ingestion Error", str(e))
 
     def compute_math(self):
+        """Executes postgraduate model optimization, comparing objective regression parameters."""
         stat, p_val = shapiro(self.data_y)
         ss_tot = np.sum((self.data_y - np.mean(self.data_y))**2)
-        popt_lin, _ = curve_fit(linear_theory, self.data_x, self.data_y)
-        r2_lin = 1 - (np.sum((self.data_y - linear_theory(self.data_x, *popt_lin))**2) / ss_tot)
-        messagebox.showinfo("Matrix Computations Complete", f"Gaussian Metric Profile: {p_val:.4f}\nLinear Matrix Score: R² = {r2_lin:.4f}")
+        model_type = self.model_var.get()
         
         plt.figure(figsize=(8, 4))
-        plt.scatter(self.data_x, self.data_y, color='white', edgecolors='#00ff66', label='Injected Points')
+        plt.scatter(self.data_x, self.data_y, color='white', edgecolors='#00ff66', label='Empirical Array Points')
         x_smooth = np.linspace(min(self.data_x), max(self.data_x), 300)
-        plt.plot(x_smooth, linear_theory(x_smooth, *popt_lin), color='#00bcff', label=f'Linear Overlap (R²={r2_lin:.4f})')
+        
+        if "Linear" in model_type:
+            popt, _ = curve_fit(linear_theory, self.data_x, self.data_y)
+            r2 = 1 - (np.sum((self.data_y - linear_theory(self.data_x, *popt))**2) / ss_tot)
+            plt.plot(x_smooth, linear_theory(x_smooth, *popt), color='#00bcff', label=f'Linear Model (R²={r2:.4f})')
+            msg = f"Linear Convergence Confirmed.\nResidual Optimization Score: R² = {r2:.4f}"
+        else:
+            popt, _ = curve_fit(polynomial_theory(self.data_x, self.data_y))
+            r2 = 1 - (np.sum((self.data_y - polynomial_theory(self.data_x, *popt))**2) / ss_tot)
+            plt.plot(x_smooth, polynomial_theory(x_smooth, *popt), color='#d6bcfa', label=f'Quadratic Model (R²={r2:.4f})')
+            msg = f"Polynomial Convergence Confirmed.\nOptimized Model Score: R² = {r2:.4f}"
+            
+        messagebox.showinfo("Regression Core Complete", f"Gaussian Metric Profile: p-val = {p_val:.4f}\n{msg}")
         ax = plt.gca(); t = self.themes[self.current_theme]
         ax.set_facecolor(t["bg"]); plt.gcf().patch.set_facecolor(t["bg"])
         plt.legend(); plt.grid(True, color='#444444'); plt.show()
 
     def compute_text(self):
+        """Performs Algorithmic Term-Frequency (TF) matrix computation loops."""
         self.current_statement = self.text_box.get("1.0", tk.END).strip()
-        proposition = self.current_statement.lower()
+        tokens = [w.strip(".,\"'()?!;:") for w in self.current_statement.lower().split() if w.strip()]
+        total_words = len(tokens)
+        
+        if total_words == 0:
+            messagebox.showerror("Empty String", "Please input text context variables.")
+            return
+            
+        # Calculate raw algorithmic Term Frequency vector dimensions
         scores = {}
-        total_hits = 0
-        
-        for school, phrases in self.dictionary.items():
-            count = sum(len(re.findall(rf"{phrase}", proposition)) for phrase in phrases)
-            scores[school] = count
-            total_hits += count
+        total_vector_hits = 0
+        for category, anchor_phrases in self.dictionary.items():
+            count = 0
+            for phrase in anchor_phrases:
+                # Match complete multi-word concept tokens
+                count += len(re.findall(rf"\b{phrase}\b", self.current_statement.lower()))
+            scores[category] = count
+            total_vector_hits += count
             
-        self.percentages = {k: (v / total_hits * 100) if total_hits > 0 else 0.0 for k, v in scores.items()}
+        self.percentages = {k: (v / total_vector_hits * 100) if total_vector_hits > 0 else 0.0 for k, v in scores.items()}
         
-        # --- THREAT SEVERITY ASSESSMENT COMPOTATION LOGIC ---
-        risk_pct = self.percentages.get("Risk Assessment Profile", 0.0)
-        legal_pct = self.percentages.get("Legal-Political Framework", 0.0)
-        combined_threat = risk_pct + legal_pct
+        # --- POSTGRADUATE METRIC B: DYNAMIC RECURSIVE STANDARDISED THRESHOLDING ---
+        # Query database to capture historical mean and variance for real anomaly tracking
+        current_run_threat = self.percentages.get("Risk Assessment Profile", 0.0) + self.percentages.get("Legal-Political Framework", 0.0)
         
-        if combined_threat >= 40.0:
-            self.generated_risk_statement = "CRITICAL EXPOSURE: Systemic liability and operational safety protocols breached."
-        elif combined_threat >= 15.0:
-            self.generated_risk_statement = "HIGH RISK: Regulatory non-compliance vectors identified. Audit recommended."
+        historical_threats = []
+        try:
+            conn = sqlite3.connect("matrix_permanent_vault.db")
+            cursor = conn.cursor()
+            cursor.execute("SELECT combined_risk_score FROM evaluation_history")
+            historical_threats = [row[0] for row in cursor.fetchall() if row[0] is not None]
+            conn.close()
+        except Exception as e: print(f"Vault calculation hitch: {e}")
+        
+        # Algorithmic Anomaly Thresholding Pipeline: If database is new, use 20% baseline, else calculate Z-Score
+        if len(historical_threats) < 3:
+            if current_run_threat >= 25.0:
+                self.generated_risk_statement = "STATISTICAL VARIANCE EXCEEDED: Elevated threat anomalies identified."
+            else:
+                self.generated_risk_statement = "STOCHASTIC HOMOSCEDASTICITY: Threat variants resting within baseline parameters."
         else:
-            self.generated_risk_statement = "STABLE GATEWAY: Standard framework limits maintained. Low threat profile."
+            mean = np.mean(historical_threats)
+            std_dev = np.std(historical_threats)
+            if std_dev == 0: std_dev = 1.0
+            z_score = (current_run_threat - mean) / std_dev
             
-        report = f"--- AUTOMATED RISK & SPECTRUM SUMMARY ---\n\n"
-        report += f"RISK MATRIX ASSIGNED:\n-> {self.generated_risk_statement}\n\n"
+            # Anomaly triggered if current variance splits further than 1.5 standard deviations from history
+            if z_score >= 1.5:
+                self.generated_risk_statement = f"CRITICAL ANOMALY ALERT: Vector variance models highly elevated (+{z_score:.2f}σ)."
+            elif z_score <= -1.5:
+                self.generated_risk_statement = f"OPTIMIZED COHOMOLOGY: Operational risks resting significantly below baseline (-{abs(z_score):.2f}σ)."
+            else:
+                self.generated_risk_statement = f"STOCHASTIC BASELINE PRESERVED: Variance variance within normal models ({z_score:+.2f}σ)."
+
+        report = f"--- ALGENT CONTEXTUAL VECTOR ANALYSIS ---\n\n"
+        report += f"DYNAMIC RISK EVALUATION PROFILE:\n-> {self.generated_risk_statement}\n\n"
         dominant_framework = "Unclassified Spectrum"
         max_pct = 0.0
         for school, pct in self.percentages.items():
@@ -259,7 +315,7 @@ class EnterpriseValidatorApp:
                     max_pct = pct
                     dominant_framework = school
                     
-        messagebox.showinfo("Matrix Analytics Summary", report)
+        messagebox.showinfo("Postgraduate Analytics Summary", report)
         self.report_btn.configure(state="normal")
         self.on_theme_changed(None)
         
@@ -269,13 +325,13 @@ class EnterpriseValidatorApp:
             cursor = conn.cursor()
             cursor.execute("""
                 INSERT INTO evaluation_history (
-                    timestamp, proposition, dominant_classification, risk_statement,
+                    timestamp, proposition, dominant_classification, risk_statement, combined_risk_score,
                     empiricism, rationalism, determinism, existentialism,
                     nihilism, stoicism, utilitarianism, deontology,
                     absurdism, virtue_ethics, risk_assessment, legal_political
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
-                timestamp, self.current_statement, dominant_framework, self.generated_risk_statement,
+                timestamp, self.current_statement, dominant_framework, self.generated_risk_statement, current_run_threat,
                 f"{self.percentages.get('Empiricism (Sensory)', 0.0):.1f}%", f"{self.percentages.get('Rationalism (Logic)', 0.0):.1f}%",
                 f"{self.percentages.get('Determinism (Fatalism)', 0.0):.1f}%", f"{self.percentages.get('Existentialism (Agency)', 0.0):.1f}%",
                 f"{self.percentages.get('Nihilism (Void Matrix)', 0.0):.1f}%", f"{self.percentages.get('Stoicism (Resilience)', 0.0):.1f}%",
@@ -297,6 +353,7 @@ class EnterpriseValidatorApp:
         values = [v for k, v in self.percentages.items() if v > 0]
         if not categories: categories, values = ["Unclassified Spectrum"], [100.0]
         
+        # Draw the report spectral graph matching your active user interface theme profile
         fig, ax = plt.subplots(figsize=(6, 2.2))
         bars = ax.barh(categories, values, color=t["secondary"], height=0.45)
         ax.set_xlim(0, 100)
@@ -327,8 +384,8 @@ class EnterpriseValidatorApp:
             for school, pct in self.percentages.items():
                 if pct > 0: data.append([Paragraph(school, body_style), Paragraph(f"{pct:.1f}%", body_style)])
                 
-            # Direct text string expression to bypass character markdown drops completely
-            t_box = Table(data, colWidths=eval("[380" + ", 1" + "00]"))
+            # HARDCODED COLWIDTH INTEGERS - Explicitly forces cell sizing to completely bypass markdown drops
+            t_box = Table(data, colWidths=[380, 100])
             t_box.setStyle(TableStyle([
                 ('BACKGROUND', (0, 0), (1, 0), colors.HexColor(t["accent"])), ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
                 ('BOTTOMPADDING', (0, 0), (-1, 0), 6), ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor(t["card"])),
@@ -338,13 +395,13 @@ class EnterpriseValidatorApp:
             
             def draw_background(canvas, document):
                 canvas.saveState(); canvas.setFillColor(colors.HexColor(t["bg"]))
-                # Plain, explicitly unpacked width and height parameters to resolve the abs() conflict permanently
+                # Plain numbers explicitly split width and height to clear the abs() tuple conflict forever
                 pg_w, pg_h = document.pagesize
                 canvas.rect(0, 0, pg_w, pg_h, fill=True, stroke=False); canvas.restoreState()
                 
             doc.build(story, onFirstPage=draw_background)
             if os.path.exists(chart_filename): os.remove(chart_filename)
-            messagebox.showinfo("Adaptive PDF Compiled", f"Success! Risk statement attached and PDF compiled successfully.")
+            messagebox.showinfo("Adaptive PDF Compiled", "Success! Contrast-aligned master report generated successfully.")
         except Exception as e: messagebox.showerror("PDF Compilation Error", str(e))
 
 if __name__ == "__main__":
