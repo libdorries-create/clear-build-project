@@ -49,13 +49,13 @@ class EnterpriseValidatorApp:
             "Empiricism (Sensory)": ["empirical data", "sensory observation", "scientific evidence", "measurable observation", "verifiable data"],
             "Rationalism (Logic)": ["pure reason", "logical deduction", "intellect concept", "mental construct", "rational mind"],
             "Determinism (Fatalism)": ["predetermined fate", "causal chain", "inevitable sequence", "dictated by destiny", "pregestated variables"],
-            "Existentialism (Agency)": ["create purpose", "absolute freedom", "personal choice", "individual agency", "authentic existence"],
+            "Existentialism (Agency)": ["choice", "freedom", "free will", "exist", "create purpose", "absolute freedom", "personal choice", "individual agency", "authentic existence"],
             "Nihilism (Void Matrix)": ["no objective value", "intrinsic meaning", "inherently meaningless", "cold indifference", "cosmic void"],
-            "Stoicism (Resilience)": ["emotional control", "unshakeable calm", "enduring hardship", "mental fortitude", "stoic resilience"],
-            "Utilitarianism (Consequence)": ["maximize utility", "greatest good", "maximize happiness", "collective welfare", "consequential outcome"],
-            "Deontology (Duty Matrix)": ["absolute moral duty", "categorical imperative", "rule of law", "binding obligation", "unconditional command"],
-            "Absurdism (Defiance)": ["absurd nature", "meaningless conflict", "embrace the chaos", "sisyphus", "rebellion against the void"],
-            "Virtue Ethics (Character)": ["moral excellence", "human flourishing", "virtuous character", "practical wisdom", "temperance and justice"]
+            "Stoicism (Resilience)": ["emotional control", "hardship", "calm", "stoic", "endur", "fortitude", "unshakeable calm", "enduring hardship", "mental fortitude", "stoic resilience"],
+            "Utilitarianism (Consequence)": ["utility", "greatest good", "consequence", "maximize happiness", "welfare", "maximize utility", "maximize happiness", "collective welfare", "consequential outcome"],
+            "Deontology (Duty Matrix)": ["duty", "obligation", "rule", "categorical imperative", "absolute law", "absolute moral duty", "rule of law", "binding obligation", "unconditional command"],
+            "Absurdism (Defiance)": ["absurd", "rebellion", "meaningless conflict", "sisyphus", "embrace the chaos", "absurd nature", "sisyphean defiance", "rebellion against the void"],
+            "Virtue Ethics (Character)": ["virtue", "character", "moral excellence", "flourish", "wisdom", "temperance", "human flourishing", "virtuous character", "practical wisdom", "temperance and justice"]
         }
         
         # UI Themes Database Configuration
@@ -132,7 +132,7 @@ class EnterpriseValidatorApp:
         self.prompt_lbl.pack(anchor="w", padx=25, pady=5)
         self.text_box = tk.Text(self.tab2, height=5, width=60, bd=0, highlightthickness=1)
         self.text_box.pack(padx=25, pady=5)
-        self.text_box.insert(tk.END, "Our deep-space sensors recorded verifiable data and empirical evidence of an ancient alien structure, using pure reason to decode its geometric layout. The telemetry proves the system functions via a tight causal chain where every signal is bound, requiring the research crew to maintain an unshakeable calm, protect their moral excellence, and ensure our journey yields a positive consequential outcome for human history.")
+        self.text_box.insert(tk.END, "We must secure verifiable data from our quarterly user feedback loops to analyze our current market position, using a logical deduction to restructure our software delivery model. Remember that our success follows a causal chain where every growth metric is linked, so our team must find an unshakeable calm, cultivate a virtuous character, and push for a positive consequential outcome for our users.")
         self.eval_btn = tk.Button(self.tab2, text="🔬 EXECUTE CONFIGURATION EVALUATION", command=self.compute_text)
         self.eval_btn.pack(pady=15)
         
@@ -282,9 +282,8 @@ class EnterpriseValidatorApp:
             for school, pct in self.percentages.items():
                 if pct > 0: data.append([Paragraph(school, body_style), Paragraph(f"{pct:.1f}%", body_style)])
                 
-            # FOOLPROOF EXPLICIT DIMENSION VECTOR ASSIGNMENT
-            t_box = Table(data, colWidths=eval("[380" + ", 1" + "00]"))
-
+            # HARDCODED RAW INTEGERS TO COMPLETELY BYPASS THE SYSTEM DROPS
+            t_box = Table(data, colWidths=[380, 100])
             t_box.setStyle(TableStyle([
                 ('BACKGROUND', (0, 0), (1, 0), colors.HexColor(t["accent"])),
                 ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
