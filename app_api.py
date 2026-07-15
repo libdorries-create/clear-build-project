@@ -299,8 +299,10 @@ class EnterpriseValidatorApp:
             def draw_background(canvas, document):
                 canvas.saveState()
                 canvas.setFillColor(colors.HexColor(t["bg"]))
-                canvas.rect(0, 0, document.pagesize, document.pagesize, fill=True, stroke=False)
+                # Separating the width and height structures to clear the abs() tuple conflict cleanly
+                canvas.rect(0, 0, document.pagesize[0], document.pagesize[1], fill=True, stroke=False)
                 canvas.restoreState()
+
                 
             doc.build(story, onFirstPage=draw_background)
             if os.path.exists(chart_filename): os.remove(chart_filename)
