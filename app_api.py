@@ -114,7 +114,7 @@ class EnterpriseValidatorApp:
         for lbl in self.form_labels: lbl.configure(bg=t["bg"], fg="#ffffff")
         for ent in self.entries.values(): ent.configure(bg=t["card"], fg="#ffffff", highlightbackground=t["card"])
         
-        # --- STARK HIGH-CONTRAST LABELS WITH ZERO EYE STRAIN ---
+        # --- STARK HIGH-CONTRAST LIGHT BUTTON BACKGROUNDS WITH BOLD BLACK FONTS ---
         self.upload_btn.configure(bg="#f8fafc", fg="#000000", activeforeground="#ffffff", activebackground="#475569", font=("Helvetica", 10, "bold"), bd=1, relief="solid")
         self.math_btn.configure(bg="#ffffff", fg="#000000", activeforeground="#ffffff", activebackground="#1e293b", font=("Helvetica", 11, "bold"), bd=1, relief="solid")
         
@@ -130,7 +130,6 @@ class EnterpriseValidatorApp:
         self.math_title = tk.Label(self.tab1, text="GRADUATE STATISTICAL & MATRIX STUDY MATRIX", font=("Helvetica", 12, "bold"))
         self.math_title.pack(pady=15)
         
-        # New Dropdown Menu allowing selection between Linear, Polynomial, Exponential, or Logarithmic models
         self.math_dropdown_lbl = tk.Label(self.tab1, text="Select Target Fitting Curve Model Architecture:")
         self.math_dropdown_lbl.pack(pady=2)
         self.curve_var = tk.StringVar(value="Linear Model Fit")
@@ -224,39 +223,39 @@ class EnterpriseValidatorApp:
         ss_tot = np.sum((self.data_y - np.mean(self.data_y))**2)
         model_selection = self.curve_var.get()
         
-        # Route logic and compute fitting depending on active dropdown selection
         try:
             if model_selection == "Linear Model Fit":
                 popt, _ = curve_fit(linear_theory, self.data_x, self.data_y)
                 y_fit = linear_theory(self.data_x, *popt)
-                label_str = f"Linear Fit (R²="
+                label_str = "Linear Fit (R²="
                 func_theory = linear_theory
             elif model_selection == "Polynomial 2nd Order Fit":
                 popt, _ = curve_fit(polynomial_theory, self.data_x, self.data_y)
                 y_fit = polynomial_theory(self.data_x, *popt)
-                label_str = f"Polynomial Fit (R²="
+                label_str = "Polynomial Fit (R²="
                 func_theory = polynomial_theory
             elif model_selection == "Exponential Growth Fit":
                 popt, _ = curve_fit(exponential_theory, self.data_x, self.data_y, p0=[1.0, 0.1])
                 y_fit = exponential_theory(self.data_x, *popt)
-                label_str = f"Exponential Fit (R²="
+                label_str = "Exponential Fit (R²="
                 func_theory = exponential_theory
             elif model_selection == "Logarithmic Distribution Fit":
-                if np.any(self.data_x <= 0): raise ValueError("Logarithmic fit requires positive independent array elements.")
+                if np.any(self.data_x <= 0): raise ValueError("Logarithmic fit requires positive independent variables.")
                 popt, _ = curve_fit(logarithmic_theory, self.data_x, self.data_y)
                 y_fit = logarithmic_theory(self.data_x, *popt)
-                label_str = f"Logarithmic Fit (R²="
+                label_str = "Logarithmic Fit (R²="
                 func_theory = logarithmic_theory
                 
             r2_score = 1 - (np.sum((self.data_y - y_fit)**2) / ss_tot)
         except Exception as err:
             messagebox.showerror("Mathematical Overload", f"Optimization fit breakdown: {str(err)}"); return
 
+        # Fixed target routing saves graphic assets directly to your Desktop canvas space
         desktop_dir = os.path.expanduser("~/Desktop")
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         save_filepath = os.path.join(desktop_dir, f"Advanced_Fit_Analysis_{timestamp}.png")
         
-        # --- EYESTRAIN-MITIGATED LOW CONTRAST MATPLOTLIB GRID ---
+        # Softened eye-friendly dark mode plotting layers
         plt.figure(figsize=(8, 4))
         plt.scatter(self.data_x, self.data_y, color='#475569', alpha=0.7, edgecolors='#94a3b8', linewidths=1, s=45, label='Observed Data points')
         
@@ -276,6 +275,7 @@ class EnterpriseValidatorApp:
         plt.tight_layout(); plt.savefig(save_filepath, dpi=200, facecolor=t["bg"])
         messagebox.showinfo("Matrix Computations Complete", f"Gaussian Metric Profile: {p_val:.4f}\n{model_selection} Score: R² = {r2_score:.4f}\n\nSuccess! High-resolution chart saved to Desktop:\n'{os.path.basename(save_filepath)}'")
         plt.show()
+
     def compute_text(self):
         self.current_statement = self.text_box.get("1.0", tk.END).strip()
         proposition = self.current_statement.lower()
@@ -289,6 +289,7 @@ class EnterpriseValidatorApp:
             
         self.percentages = {k: (v / total_hits * 100) if total_hits > 0 else 0.0 for k, v in scores.items()}
         
+        # --- THREAT SEVERITY ASSESSMENT COMPOTATION LOGIC ---
         risk_pct = self.percentages.get("Risk Assessment Profile", 0.0)
         legal_pct = self.percentages.get("Legal-Political Framework", 0.0)
         combined_threat = risk_pct + legal_pct
@@ -300,7 +301,7 @@ class EnterpriseValidatorApp:
         else:
             self.generated_risk_statement = "STABLE GATEWAY: Standard framework limits maintained. Low threat profile."
             
-        report = f"--- AUTOMATED RISK & SPECTRUM SUMMARY ---\n\n"
+        report = "--- AUTOMATED RISK & SPECTRUM SUMMARY ---\n\n"
         report += f"RISK MATRIX ASSIGNED:\n-> {self.generated_risk_statement}\n\n"
         dominant_framework = "Unclassified Spectrum"
         max_pct = 0.0
@@ -319,6 +320,13 @@ class EnterpriseValidatorApp:
         try:
             conn = sqlite3.connect("matrix_permanent_vault.db")
             cursor = conn.cursor()
+            cursor.execute("PRAGMA table_info(evaluation_history)")
+            existing_cols = [col for col in cursor.fetchall()]
+            if "risk_statement" not in existing_cols:
+                cursor.execute("ALTER TABLE evaluation_history ADD COLUMN risk_statement TEXT")
+                cursor.execute("ALTER TABLE evaluation_history ADD COLUMN risk_assessment TEXT")
+                cursor.execute("ALTER TABLE evaluation_history ADD COLUMN legal_political TEXT")
+                
             cursor.execute("""
                 INSERT INTO evaluation_history (
                     timestamp, proposition, dominant_classification, risk_statement,
@@ -337,7 +345,6 @@ class EnterpriseValidatorApp:
             ))
             conn.commit(); conn.close(); self.load_history_from_vault()
         except Exception as e: print(f"Database sync hitch: {str(e)}")
-
     def compile_local_report(self):
         doc_title = self.entries["Custom Document Title:"].get().strip()
         auditor = self.entries["Target Auditor Initials:"].get().strip()
@@ -380,7 +387,7 @@ class EnterpriseValidatorApp:
             for school, pct in self.percentages.items():
                 if pct > 0: data.append([Paragraph(school, body_style), Paragraph(f"{pct:.1f}%", body_style)])
                 
-            # HARDCODED TABLE SIZING MATRIX - Bypasses markdown dropped characters completely
+            # Protected direct string array compiler completely seals your table width mapping coordinates
             t_box = Table(data, colWidths=eval("[380" + ", 1" + "00]"))
             t_box.setStyle(TableStyle([
                 ('BACKGROUND', (0, 0), (1, 0), colors.HexColor(t["accent"])), ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
@@ -391,12 +398,13 @@ class EnterpriseValidatorApp:
             
             def draw_background(canvas, document):
                 canvas.saveState(); canvas.setFillColor(colors.HexColor(t["bg"]))
+                # Plain, explicitly unpacked width and height parameters to resolve the abs() conflict permanently
                 pg_w, pg_h = document.pagesize
                 canvas.rect(0, 0, pg_w, pg_h, fill=True, stroke=False); canvas.restoreState()
                 
             doc.build(story, onFirstPage=draw_background)
             if os.path.exists(chart_filename): os.remove(chart_filename)
-            messagebox.showinfo("Adaptive PDF Compiled", f"Success! Risk statement attached and PDF compiled successfully.")
+            messagebox.showinfo("Adaptive PDF Compiled", "Success! Contrast-aligned master report generated successfully.")
         except Exception as e: messagebox.showerror("PDF Compilation Error", str(e))
 
 if __name__ == "__main__":
