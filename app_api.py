@@ -4,17 +4,18 @@ from scipy.stats import shapiro
 import re
 from datetime import datetime
 
+# --- CORE MATHEMATICAL THEORETICAL FORMULAS ---
 def linear_theory(x, m, c): return m * x + c
 def polynomial_theory(x, a, b, c): return a * (x**2) + b * x + c
 
 def execute_computational_matrices():
-    print("\n" + "="*50)
+    print("\n" + "="*60)
     print("      UNIVERSAL MATRIX DATA VALIDATOR ACTIVATED")
-    print("="*50)
-    print(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+    print("="*60)
+    print(f"Session Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     
-    # --- PIPELINE 1: MATH ANALYTICS DATA ---
-    print("[1/2] RUNNING MATHEMATICAL THEORETICAL CURVE FITTING...")
+    # --- PIPELINE 1: MATH ANALYTICS CORRELATION ---
+    print("\n[1/2] PROCESSING MATHEMATICAL CURVE MATRIX INTEGRATION...")
     data_x = np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
     data_y = np.array([2.1, 3.9, 6.1, 8.0, 9.9, 12.2])
     
@@ -29,34 +30,52 @@ def execute_computational_matrices():
     
     print(f" -> Shapiro-Wilk Gaussian Status: {gaussian_status} (p={p_val:.4f})")
     print(f" -> Linear Alignment Matrix Score: R² = {r2_lin:.4f}")
+    print(" -> Alternative internal higher-order curve modules: ACTIVE")
+
+    # --- PIPELINE 2: EXPANDED TEXT CONCEPT LOOP ---
+    print("\n[2/2] INITIALISING TEXTUAL CONFIGURATION SPECTRUM EVALUATOR...")
+    print("Type 'exit' or 'quit' at any time to break the processing loop.")
     
-    # --- PIPELINE 2: TEXT CONCEPT ANALYSIS ---
-    print("\n[2/2] RUNNING PHILOSOPHICAL CONFIGURATION EVALUATION...")
-    proposition = "Life possesses no objective value or intrinsic meaning. The universe is cold and indifferent. Therefore, one must cultivate absolute emotional control, enduring hardship with unshakeable stoic calm."
-    print(f" Target Text: \"{proposition[:60]}...\"")
-    
+    # Fully expanded, multi-category analytical dictionary matrix
     dictionary = {
-        "Empiricism (Sensory)": ["sensory", "observ", "data", "experi"],
-        "Rationalism (Logic)": ["logic", "reason", "mind", "thought"],
-        "Determinism (Fatalism)": ["predetermine", "caus", "dictat", "fate"],
-        "Existentialism (Agency)": ["choice", "freedom", "free will", "exist"],
-        "Nihilism (Void Matrix)": ["no objective", "intrinsic meaning", "meaningless", "indifferent", "void"],
-        "Stoicism (Resilience)": ["emotional control", "hardship", "calm", "stoic", "endur"]
+        "Empiricism (Sensory)": ["sensory", "observ", "data", "experi", "evidence"],
+        "Rationalism (Logic)": ["logic", "reason", "mind", "thought", "intellect"],
+        "Determinism (Fatalism)": ["predetermine", "caus", "dictat", "fate", "inevitable"],
+        "Existentialism (Agency)": ["choice", "freedom", "free will", "exist", "create purpose"],
+        "Nihilism (Void Matrix)": ["no objective", "intrinsic meaning", "meaningless", "indifferent", "void", "nothingness"],
+        "Stoicism (Resilience)": ["emotional control", "hardship", "calm", "stoic", "endur", "fortitude"],
+        "Utilitarianism (Consequence)": ["utility", "greatest good", "consequence", "maximize happiness", "welfare"],
+        "Deontology (Duty Matrix)": ["duty", "obligation", "rule", "categorical imperative", "absolute law"],
+        "Absurdism (Defiance)": ["absurd", "rebellion", "meaningless conflict", "sisyphus", "embrace the chaos"],
+        "Virtue Ethics (Character)": ["virtue", "character", "moral excellence", "flourish", "wisdom", "temperance"]
     }
-    
-    scores = {}
-    total_hits = 0
-    for school, keywords in dictionary.items():
-        count = sum(len(re.findall(rf"{word}", proposition.lower())) for word in keywords)
-        scores[school] = count
-        total_hits += count
+
+    while True:
+        print("\n" + "-"*60)
+        proposition = input("ENTER TARGET PROPOSITION TEXT TO ANALYSE:\n> ").strip()
         
-    print("\n--- MATRIX ALIGNMENT MATCH SPECTRUM SCORES ---")
-    for school, count in scores.items():
-        pct = (count / total_hits * 100) if total_hits > 0 else 0.0
-        if pct > 0:
-            print(f" * {school}: {pct:.1f}%")
-    print("="*50 + "\n")
+        if not proposition:
+            continue
+        if proposition.lower() in ['exit', 'quit']:
+            print("\nExiting analytical processing stream. Core matrix offline.")
+            print("="*60 + "\n")
+            break
+            
+        scores = {}
+        total_hits = 0
+        for school, keywords in dictionary.items():
+            count = sum(len(re.findall(rf"{word}", proposition.lower())) for word in keywords)
+            scores[school] = count
+            total_hits += count
+            
+        print("\n--- MATRIX ALIGNMENT MATCH SPECTRUM SCORES ---")
+        if total_hits == 0:
+            print(" * Unclassified Spectrum Matrix: 100.0% (No registered keyword hits)")
+        else:
+            for school, count in scores.items():
+                pct = (count / total_hits * 100)
+                if pct > 0:
+                    print(f" * {school}: {pct:.1f}%")
 
 if __name__ == "__main__":
     execute_computational_matrices()
