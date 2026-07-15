@@ -18,9 +18,8 @@ from reportlab.lib import colors
 def linear_theory(x, m, c): return m * x + c
 def polynomial_theory(x, a, b, c): return a * (x**2) + b * x + c
 
-# --- PIPELINE A: ENTERPRISE SQLITE DATABASE INITIALISATION ---
+# --- ENTERPRISE SQLITE DATABASE INITIALISATION ---
 def initialise_database():
-    """Establishes a permanent, structured relational database ledger schema file."""
     conn = sqlite3.connect("matrix_permanent_vault.db")
     cursor = conn.cursor()
     cursor.execute("""
@@ -45,18 +44,17 @@ class EnterpriseValidatorApp:
         self.root.title("Universal Matrix Platform - Architectural Tier Edition")
         self.root.geometry("620x680")
         
-        # --- PIPELINE B: ADVANCED SEMANTIC PHRASE DICTIONARY MATRIX ---
-        # Upgraded from single snippets to capture multi-word conceptual logic flows
+        # --- ADVANCED SEMANTIC PHRASE DICTIONARY MATRIX ---
         self.dictionary = {
             "Empiricism (Sensory)": ["empirical data", "sensory observation", "scientific evidence", "measurable observation", "verifiable data"],
-            "Rationalism (Logic)": ["pure reason", "logical deduction", "intellectual concept", "mental construct", "rational mind"],
+            "Rationalism (Logic)": ["pure reason", "logical deduction", "intellect concept", "mental construct", "rational mind"],
             "Determinism (Fatalism)": ["predetermined fate", "causal chain", "inevitable sequence", "dictated by destiny", "pregestated variables"],
             "Existentialism (Agency)": ["create purpose", "absolute freedom", "personal choice", "individual agency", "authentic existence"],
             "Nihilism (Void Matrix)": ["no objective value", "intrinsic meaning", "inherently meaningless", "cold indifference", "cosmic void"],
             "Stoicism (Resilience)": ["emotional control", "unshakeable calm", "enduring hardship", "mental fortitude", "stoic resilience"],
             "Utilitarianism (Consequence)": ["maximize utility", "greatest good", "maximize happiness", "collective welfare", "consequential outcome"],
             "Deontology (Duty Matrix)": ["absolute moral duty", "categorical imperative", "rule of law", "binding obligation", "unconditional command"],
-            "Absurdism (Defiance)": ["absurd nature", "meaningless conflict", "embrace the chaos", "sisyphean defiance", "rebellion against the void"],
+            "Absurdism (Defiance)": ["absurd nature", "meaningless conflict", "embrace the chaos", "sisyphus", "rebellion against the void"],
             "Virtue Ethics (Character)": ["moral excellence", "human flourishing", "virtuous character", "practical wisdom", "temperance and justice"]
         }
         
@@ -69,6 +67,7 @@ class EnterpriseValidatorApp:
         }
         self.current_theme = "Cyberpunk Matrix"
         self.percentages, self.current_statement, self.data_x, self.data_y = {}, "", None, None
+
         # Main Tab Scaffold
         self.notebook = ttk.Notebook(root)
         self.notebook.pack(fill="both", expand=True, padx=15, pady=15)
@@ -81,7 +80,6 @@ class EnterpriseValidatorApp:
         self.setup_text_matrix()
         self.setup_theme_selector()
         self.apply_theme_profile()
-
     def setup_theme_selector(self):
         self.theme_frame = tk.Frame(self.root)
         self.theme_frame.pack(fill="x", side="bottom", padx=15, pady=5)
@@ -134,7 +132,7 @@ class EnterpriseValidatorApp:
         self.prompt_lbl.pack(anchor="w", padx=25, pady=5)
         self.text_box = tk.Text(self.tab2, height=5, width=60, bd=0, highlightthickness=1)
         self.text_box.pack(padx=25, pady=5)
-        self.text_box.insert(tk.END, "Life possesses no objective value or intrinsic meaning. The universe is cold and indifferent. Therefore, one must cultivate absolute emotional control, enduring hardship with unshakeable stoic calm.")
+        self.text_box.insert(tk.END, "Our deep-space sensors recorded verifiable data and empirical evidence of an ancient alien structure, using pure reason to decode its geometric layout. The telemetry proves the system functions via a tight causal chain where every signal is bound, requiring the research crew to maintain an unshakeable calm, protect their moral excellence, and ensure our journey yields a positive consequential outcome for human history.")
         self.eval_btn = tk.Button(self.tab2, text="🔬 EXECUTE CONFIGURATION EVALUATION", command=self.compute_text)
         self.eval_btn.pack(pady=15)
         
@@ -186,7 +184,6 @@ class EnterpriseValidatorApp:
         scores = {}
         total_hits = 0
         
-        # Upgraded computation loop mapping multi-word phrases cleanly
         for school, phrases in self.dictionary.items():
             count = sum(len(re.findall(rf"{phrase}", proposition)) for phrase in phrases)
             scores[school] = count
@@ -209,8 +206,6 @@ class EnterpriseValidatorApp:
         self.on_theme_changed(None)
         
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        
-        # COMMIT TRANSACTION DIRECTLY TO PERMANENT SQL DATABASE VAULT
         try:
             conn = sqlite3.connect("matrix_permanent_vault.db")
             cursor = conn.cursor()
@@ -287,7 +282,9 @@ class EnterpriseValidatorApp:
             for school, pct in self.percentages.items():
                 if pct > 0: data.append([Paragraph(school, body_style), Paragraph(f"{pct:.1f}%", body_style)])
                 
-            t_box = Table(data, colWidths=[380, 70])
+            # FOOLPROOF EXPLICIT DIMENSION VECTOR ASSIGNMENT
+            widths_vector = [380, 70]
+            t_box = Table(data, colWidths=widths_vector)
             t_box.setStyle(TableStyle([
                 ('BACKGROUND', (0, 0), (1, 0), colors.HexColor(t["accent"])),
                 ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
